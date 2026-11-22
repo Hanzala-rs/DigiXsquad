@@ -1,3 +1,6 @@
 # infra — Docker, reverse proxy, CI
 
-**Owner: Codex** · Phase 1: `docker-compose.yml` (postgres:16, redis:7, minio, mailpit), Phase 6: prod compose + Caddy + backups.
+**Owner: Codex**
+
+- Phase 1: `docker-compose.yml` for local dev: postgres:16, minio (+ bucket init), mailpit. **No Redis.**
+- Phase 6: `docker-compose.prod.yml` for one **Oracle Cloud Always Free** Arm VM (`linux/arm64` images): caddy (auto HTTPS), web, api, postgres. Uploads + backups go to Cloudflare R2 free tier. Uptime Kuma (self-hosted, free) for uptime alerts.

@@ -20,6 +20,7 @@ export type SiteContentCompany = {
   tagline: string;
   email: string;
   phone: string;
+  /** Used only for free wa.me click-to-chat links */
   whatsapp?: string;
   address: string;
   ntn?: string;

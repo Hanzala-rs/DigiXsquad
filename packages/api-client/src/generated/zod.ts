@@ -111,7 +111,7 @@ export const GetSiteContentResponse = zod.object({
   "tagline": zod.string(),
   "email": zod.string(),
   "phone": zod.string(),
-  "whatsapp": zod.string().optional(),
+  "whatsapp": zod.string().optional().describe('Used only for free wa.me click-to-chat links'),
   "address": zod.string(),
   "ntn": zod.string().optional(),
   "socials": zod.record(zod.string(), zod.string()).optional()
@@ -188,8 +188,8 @@ export const PresignUploadResponse = zod.object({
  * - `squad_slug` is required when `request_type = SQUAD`.
  * - `request_type = SINGLE_ROLE` must have exactly one item.
  * - `turnstile_token` is verified with Cloudflare.
- * On success: creates organization + contact (or reuses by email), queues confirmation email/WhatsApp
- * and a sales notification.
+ * On success: creates organization + contact (or reuses by email), then sends a confirmation email
+ * to the client and a notification email to sales as background tasks (no WhatsApp API: zero-cost stack).
  */
 export const createHireRequestBodyItemsItemQuantityMin = 1;
 export const createHireRequestBodyItemsItemQuantityMax = 20;
@@ -511,7 +511,7 @@ export const AdminGetHireRequestResponse = zod.object({
 })),
   "activities": zod.array(zod.object({
   "id": zod.uuid(),
-  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'WHATSAPP', 'SYSTEM']),
+  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'SYSTEM']),
   "body": zod.string(),
   "user": zod.union([zod.object({
   "id": zod.uuid(),
@@ -618,7 +618,7 @@ export const AdminUpdateHireRequestStatusResponse = zod.object({
 })),
   "activities": zod.array(zod.object({
   "id": zod.uuid(),
-  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'WHATSAPP', 'SYSTEM']),
+  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'SYSTEM']),
   "body": zod.string(),
   "user": zod.union([zod.object({
   "id": zod.uuid(),
@@ -719,7 +719,7 @@ export const AdminAssignHireRequestResponse = zod.object({
 })),
   "activities": zod.array(zod.object({
   "id": zod.uuid(),
-  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'WHATSAPP', 'SYSTEM']),
+  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'SYSTEM']),
   "body": zod.string(),
   "user": zod.union([zod.object({
   "id": zod.uuid(),
@@ -752,7 +752,7 @@ export const AdminAddHireRequestNoteBody = zod.object({
 
 export const AdminAddHireRequestNoteResponse = zod.object({
   "id": zod.uuid(),
-  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'WHATSAPP', 'SYSTEM']),
+  "type": zod.enum(['NOTE', 'STATUS_CHANGE', 'ASSIGNMENT', 'EMAIL', 'SYSTEM']),
   "body": zod.string(),
   "user": zod.union([zod.object({
   "id": zod.uuid(),
@@ -1184,7 +1184,7 @@ export const AdminUpdateSiteContentBody = zod.object({
   "tagline": zod.string(),
   "email": zod.string(),
   "phone": zod.string(),
-  "whatsapp": zod.string().optional(),
+  "whatsapp": zod.string().optional().describe('Used only for free wa.me click-to-chat links'),
   "address": zod.string(),
   "ntn": zod.string().optional(),
   "socials": zod.record(zod.string(), zod.string()).optional()
@@ -1237,7 +1237,7 @@ export const AdminUpdateSiteContentResponse = zod.object({
   "tagline": zod.string(),
   "email": zod.string(),
   "phone": zod.string(),
-  "whatsapp": zod.string().optional(),
+  "whatsapp": zod.string().optional().describe('Used only for free wa.me click-to-chat links'),
   "address": zod.string(),
   "ntn": zod.string().optional(),
   "socials": zod.record(zod.string(), zod.string()).optional()

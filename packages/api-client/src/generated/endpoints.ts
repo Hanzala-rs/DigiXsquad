@@ -362,8 +362,8 @@ export const getCreateHireRequestUrl = () => {
  * - `squad_slug` is required when `request_type = SQUAD`.
  * - `request_type = SINGLE_ROLE` must have exactly one item.
  * - `turnstile_token` is verified with Cloudflare.
- * On success: creates organization + contact (or reuses by email), queues confirmation email/WhatsApp
- * and a sales notification.
+ * On success: creates organization + contact (or reuses by email), then sends a confirmation email
+ * to the client and a notification email to sales as background tasks (no WhatsApp API: zero-cost stack).
  */
 export const createHireRequest = async (hireRequestCreate: HireRequestCreate, options?: Parameters<typeof apiFetch>[1]): Promise<createHireRequestResponse> => {
 

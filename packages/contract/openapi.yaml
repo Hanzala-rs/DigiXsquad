@@ -126,8 +126,8 @@ paths:
         - `squad_slug` is required when `request_type = SQUAD`.
         - `request_type = SINGLE_ROLE` must have exactly one item.
         - `turnstile_token` is verified with Cloudflare.
-        On success: creates organization + contact (or reuses by email), queues confirmation email/WhatsApp
-        and a sales notification.
+        On success: creates organization + contact (or reuses by email), then sends a confirmation email
+        to the client and a notification email to sales as background tasks (no WhatsApp API: zero-cost stack).
       requestBody:
         required: true
         content:
@@ -929,7 +929,7 @@ components:
       enum: [ACTIVE, COMPLETED, TERMINATED]
     ActivityType:
       type: string
-      enum: [NOTE, STATUS_CHANGE, ASSIGNMENT, EMAIL, WHATSAPP, SYSTEM]
+      enum: [NOTE, STATUS_CHANGE, ASSIGNMENT, EMAIL, SYSTEM]
 
     # ───── common ─────
     Ok:
@@ -1049,7 +1049,7 @@ components:
             tagline: { type: string }
             email: { type: string }
             phone: { type: string }
-            whatsapp: { type: string }
+            whatsapp: { type: string, description: 'Used only for free wa.me click-to-chat links' }
             address: { type: string }
             ntn: { type: string }
             socials:
