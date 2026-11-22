@@ -1,0 +1,26 @@
+{
+  "name": "@digixsquad/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generated TS types, fetch functions and Zod schemas from packages/contract/openapi.yaml",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./zod": "./src/zod.ts"
+  },
+  "scripts": {
+    "generate": "orval --config orval.config.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@digixsquad/config": "workspace:*",
+    "@digixsquad/contract": "workspace:*",
+    "orval": "^8.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  }
+}

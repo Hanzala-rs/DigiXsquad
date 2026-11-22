@@ -1,0 +1,1507 @@
+openapi: 3.1.0
+info:
+  title: DigixSquad API
+  version: 0.1.0
+  description: |
+    Contract between `apps/web` (Next.js, Claude Code) and `apps/api` (FastAPI, Codex).
+
+    **Rules**
+    - This file is the source of truth until the FastAPI app exists. After that, Codex exports
+      `app.openapi()` and CI checks that it matches this contract (see AGENTS.md).
+    - Any change goes through a PR touching this file and is reviewed by the other agent.
+    - Field names are `snake_case` (Pydantic default). Dates are ISO-8601.
+    - Auth: httpOnly cookies `ds_access` (15 min) and `ds_refresh` (7 days). Admin routes need a valid access cookie.
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local
+tags:
+  - name: public
+  - name: auth
+  - name: admin-requests
+  - name: admin-catalog
+  - name: admin-talent
+  - name: admin-engagements
+  - name: admin-system
+
+paths:
+  # ─────────────────────────── PUBLIC ───────────────────────────
+  /health:
+    get:
+      tags: [public]
+      operationId: getHealth
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, enum: [ok] }
+
+  /squads:
+    get:
+      tags: [public]
+      operationId: listSquads
+      responses:
+        '200':
+          description: Active squads with their default roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Squad' }
+
+  /squads/{slug}:
+    get:
+      tags: [public]
+      operationId: getSquad
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Squad
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Squad' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /roles:
+    get:
+      tags: [public]
+      operationId: listRoles
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/RoleCategory' }
+      responses:
+        '200':
+          description: Active service roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ServiceRole' }
+
+  /site-content:
+    get:
+      tags: [public]
+      operationId: getSiteContent
+      description: Editable site copy (hero, about, mission, vision, values, why us, stats, FAQs).
+      responses:
+        '200':
+          description: Site content
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SiteContent' }
+
+  /uploads/presign:
+    post:
+      tags: [public]
+      operationId: presignUpload
+      description: Returns a short-lived presigned PUT URL. Allowed types are pdf, doc and docx. Max size is UPLOAD_MAX_MB.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PresignRequest' }
+      responses:
+        '200':
+          description: Presigned URL
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PresignResponse' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /hire-requests:
+    post:
+      tags: [public]
+      operationId: createHireRequest
+      description: |
+        Public multi-step form submission. Server rules:
+        - `procurement_mode` is required when `org_type = GOVT`.
+        - `squad_slug` is required when `request_type = SQUAD`.
+        - `request_type = SINGLE_ROLE` must have exactly one item.
+        - `turnstile_token` is verified with Cloudflare.
+        On success: creates organization + contact (or reuses by email), queues confirmation email/WhatsApp
+        and a sales notification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HireRequestCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HireRequestCreated' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /hire-requests/track:
+    get:
+      tags: [public]
+      operationId: trackHireRequest
+      parameters:
+        - name: ref
+          in: query
+          required: true
+          schema: { type: string, pattern: '^DS-\d{4}-\d{4,}$', examples: ['DS-2026-0001'] }
+        - name: email
+          in: query
+          required: true
+          schema: { type: string, format: email }
+      responses:
+        '200':
+          description: Public status (no internal notes)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrackResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /contact:
+    post:
+      tags: [public]
+      operationId: createContactMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactMessageCreate' }
+      responses:
+        '201':
+          description: Received
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  # ─────────────────────────── AUTH ───────────────────────────
+  /auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Sets ds_access and ds_refresh cookies
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      operationId: refreshSession
+      responses:
+        '200':
+          description: Rotates cookies
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      responses:
+        '200':
+          description: Clears cookies
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+
+  /auth/me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ─────────────────────────── ADMIN: REQUESTS ───────────────────────────
+  /admin/dashboard/stats:
+    get:
+      tags: [admin-system]
+      operationId: getDashboardStats
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: KPIs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DashboardStats' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /admin/hire-requests:
+    get:
+      tags: [admin-requests]
+      operationId: adminListHireRequests
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Search'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/RequestStatus' }
+        - name: org_type
+          in: query
+          schema: { $ref: '#/components/schemas/OrgType' }
+        - name: assigned_to
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Paginated list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HireRequestPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /admin/hire-requests/export.csv:
+    get:
+      tags: [admin-requests]
+      operationId: adminExportHireRequests
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/RequestStatus' }
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv:
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /admin/hire-requests/{id}:
+    get:
+      tags: [admin-requests]
+      operationId: adminGetHireRequest
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Full detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HireRequestDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/hire-requests/{id}/status:
+    patch:
+      tags: [admin-requests]
+      operationId: adminUpdateHireRequestStatus
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StatusUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HireRequestDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/hire-requests/{id}/assign:
+    patch:
+      tags: [admin-requests]
+      operationId: adminAssignHireRequest
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id: { type: [string, 'null'], format: uuid }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HireRequestDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /admin/hire-requests/{id}/notes:
+    post:
+      tags: [admin-requests]
+      operationId: adminAddHireRequestNote
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, minLength: 1, maxLength: 5000 }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Activity' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /admin/hire-requests/{id}/matches:
+    get:
+      tags: [admin-requests]
+      operationId: adminGetTalentMatches
+      description: For each requested item, lists AVAILABLE talents with the same role, ranked by seniority match and skills overlap.
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Matches per item
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ItemMatches' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /admin/hire-requests/{id}/convert:
+    post:
+      tags: [admin-requests]
+      operationId: adminConvertToEngagement
+      description: Marks the request WON and creates an engagement with assignments. Assigned talents become ON_ENGAGEMENT.
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EngagementCreate' }
+      responses:
+        '201':
+          description: Engagement created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Engagement' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /admin/attachments/{id}/download:
+    get:
+      tags: [admin-requests]
+      operationId: adminGetAttachmentUrl
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Short-lived signed GET URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url, expires_in]
+                properties:
+                  url: { type: string, format: uri }
+                  expires_in: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ─────────────────────────── ADMIN: CATALOG ───────────────────────────
+  /admin/squads:
+    get:
+      tags: [admin-catalog]
+      operationId: adminListSquads
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: All squads incl. inactive
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Squad' }
+    post:
+      tags: [admin-catalog]
+      operationId: adminCreateSquad
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SquadInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Squad' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /admin/squads/{id}:
+    put:
+      tags: [admin-catalog]
+      operationId: adminUpdateSquad
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SquadInput' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Squad' }
+    delete:
+      tags: [admin-catalog]
+      operationId: adminDeleteSquad
+      description: Soft delete (is_active = false).
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204': { description: Deleted }
+
+  /admin/roles:
+    get:
+      tags: [admin-catalog]
+      operationId: adminListRoles
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: All roles incl. inactive
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ServiceRole' }
+    post:
+      tags: [admin-catalog]
+      operationId: adminCreateRole
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ServiceRoleInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ServiceRole' }
+
+  /admin/roles/{id}:
+    put:
+      tags: [admin-catalog]
+      operationId: adminUpdateRole
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ServiceRoleInput' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ServiceRole' }
+    delete:
+      tags: [admin-catalog]
+      operationId: adminDeleteRole
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204': { description: Deleted (soft) }
+
+  /admin/site-content:
+    put:
+      tags: [admin-catalog]
+      operationId: adminUpdateSiteContent
+      description: SUPER_ADMIN only.
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SiteContent' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SiteContent' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─────────────────────────── ADMIN: TALENT ───────────────────────────
+  /admin/talents:
+    get:
+      tags: [admin-talent]
+      operationId: adminListTalents
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Search'
+        - name: role_slug
+          in: query
+          schema: { type: string }
+        - name: availability
+          in: query
+          schema: { $ref: '#/components/schemas/Availability' }
+      responses:
+        '200':
+          description: Paginated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TalentPage' }
+    post:
+      tags: [admin-talent]
+      operationId: adminCreateTalent
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TalentInput' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Talent' }
+
+  /admin/talents/{id}:
+    get:
+      tags: [admin-talent]
+      operationId: adminGetTalent
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Talent
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Talent' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [admin-talent]
+      operationId: adminUpdateTalent
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TalentInput' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Talent' }
+    delete:
+      tags: [admin-talent]
+      operationId: adminDeleteTalent
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204': { description: Deleted (soft) }
+
+  # ─────────────────────────── ADMIN: ENGAGEMENTS ───────────────────────────
+  /admin/engagements:
+    get:
+      tags: [admin-engagements]
+      operationId: adminListEngagements
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/EngagementStatus' }
+        - name: ending_within_days
+          in: query
+          description: Renewal alerts, e.g. 30
+          schema: { type: integer, minimum: 1, maximum: 365 }
+      responses:
+        '200':
+          description: Paginated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EngagementPage' }
+
+  /admin/engagements/{id}:
+    get:
+      tags: [admin-engagements]
+      operationId: adminGetEngagement
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Engagement
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Engagement' }
+    patch:
+      tags: [admin-engagements]
+      operationId: adminUpdateEngagement
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EngagementUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Engagement' }
+
+  /admin/engagements/{id}/renew:
+    post:
+      tags: [admin-engagements]
+      operationId: adminRenewEngagement
+      description: Creates a new engagement linked by renewed_from_id, copying assignments.
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [end_date]
+              properties:
+                end_date: { type: string, format: date }
+                monthly_fee: { type: number, minimum: 0 }
+      responses:
+        '201':
+          description: New engagement
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Engagement' }
+
+  # ─────────────────────────── ADMIN: SYSTEM ───────────────────────────
+  /admin/users:
+    get:
+      tags: [admin-system]
+      operationId: adminListUsers
+      description: SUPER_ADMIN only.
+      security: [{ cookieAuth: [] }]
+      responses:
+        '200':
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AuthUser' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [admin-system]
+      operationId: adminCreateUser
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthUser' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /admin/users/{id}:
+    patch:
+      tags: [admin-system]
+      operationId: adminUpdateUser
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthUser' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /admin/audit-logs:
+    get:
+      tags: [admin-system]
+      operationId: adminListAuditLogs
+      description: SUPER_ADMIN only.
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: entity
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Paginated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuditLogPage' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /admin/contact-messages:
+    get:
+      tags: [admin-system]
+      operationId: adminListContactMessages
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContactMessagePage' }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ds_access
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-z0-9-]+$' }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Search:
+      name: q
+      in: query
+      schema: { type: string, maxLength: 100 }
+
+  responses:
+    BadRequest:
+      description: Bad request (e.g. Turnstile failed)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Role not allowed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Conflict (duplicate / invalid state)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: Validation failed (FastAPI 422 shape)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/HTTPValidationError' }
+    RateLimited:
+      description: Too many requests
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    # ───── enums ─────
+    OrgType:
+      type: string
+      enum: [GOVT, PRIVATE]
+    RequestType:
+      type: string
+      enum: [SINGLE_ROLE, SQUAD, CUSTOM_TEAM]
+    Seniority:
+      type: string
+      enum: [JUNIOR, MID, SENIOR, LEAD]
+    EngagementMode:
+      type: string
+      enum: [ONSITE, REMOTE, HYBRID]
+    ContractType:
+      type: string
+      enum: [MONTHLY, PROJECT]
+    ProcurementMode:
+      type: string
+      enum: [DIRECT, RFQ, OPEN_TENDER, FRAMEWORK, NOT_SURE]
+    BudgetRange:
+      type: string
+      description: Monthly budget in PKR
+      enum: [PKR_UNDER_200K, PKR_200K_500K, PKR_500K_1M, PKR_1M_3M, PKR_3M_PLUS, NOT_SURE]
+    RequestStatus:
+      type: string
+      enum: [NEW, CONTACTED, PROPOSAL_SENT, NEGOTIATION, WON, LOST, ON_HOLD]
+    RoleCategory:
+      type: string
+      enum: [DEVELOPMENT, DIGITAL_MEDIA, DATA_AI, IT_SUPPORT, DIGITAL_MARKETING, MANAGEMENT]
+    UserRole:
+      type: string
+      enum: [SUPER_ADMIN, SALES, OPS]
+    Availability:
+      type: string
+      enum: [AVAILABLE, ON_ENGAGEMENT, NOTICE_PERIOD, INACTIVE]
+    EngagementStatus:
+      type: string
+      enum: [ACTIVE, COMPLETED, TERMINATED]
+    ActivityType:
+      type: string
+      enum: [NOTE, STATUS_CHANGE, ASSIGNMENT, EMAIL, WHATSAPP, SYSTEM]
+
+    # ───── common ─────
+    Ok:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+    Error:
+      type: object
+      required: [detail]
+      properties:
+        detail: { type: string }
+        code: { type: string }
+    HTTPValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            required: [loc, msg, type]
+            properties:
+              loc:
+                type: array
+                items:
+                  anyOf: [{ type: string }, { type: integer }]
+              msg: { type: string }
+              type: { type: string }
+    PageMeta:
+      type: object
+      required: [total, page, page_size]
+      properties:
+        total: { type: integer }
+        page: { type: integer }
+        page_size: { type: integer }
+    UserRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+
+    # ───── catalog ─────
+    ServiceRole:
+      type: object
+      required: [id, slug, title, category, description, skills, is_active]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        title: { type: string }
+        category: { $ref: '#/components/schemas/RoleCategory' }
+        description: { type: string }
+        skills: { type: array, items: { type: string } }
+        is_active: { type: boolean }
+    ServiceRoleInput:
+      type: object
+      required: [slug, title, category, description]
+      properties:
+        slug: { type: string, pattern: '^[a-z0-9-]+$', maxLength: 80 }
+        title: { type: string, minLength: 2, maxLength: 120 }
+        category: { $ref: '#/components/schemas/RoleCategory' }
+        description: { type: string, maxLength: 2000 }
+        skills: { type: array, items: { type: string, maxLength: 60 }, maxItems: 30 }
+        is_active: { type: boolean, default: true }
+    SquadRole:
+      type: object
+      required: [role, default_qty]
+      properties:
+        role: { $ref: '#/components/schemas/ServiceRole' }
+        default_qty: { type: integer, minimum: 1 }
+    Squad:
+      type: object
+      required: [id, slug, name, tagline, description, icon, sort_order, is_active, use_cases, roles]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        tagline: { type: string }
+        description: { type: string }
+        icon: { type: string, description: 'lucide icon name' }
+        sort_order: { type: integer }
+        is_active: { type: boolean }
+        use_cases: { type: array, items: { type: string } }
+        roles: { type: array, items: { $ref: '#/components/schemas/SquadRole' } }
+    SquadInput:
+      type: object
+      required: [slug, name, tagline, description, icon, roles]
+      properties:
+        slug: { type: string, pattern: '^[a-z0-9-]+$', maxLength: 80 }
+        name: { type: string, minLength: 2, maxLength: 120 }
+        tagline: { type: string, maxLength: 200 }
+        description: { type: string, maxLength: 3000 }
+        icon: { type: string, maxLength: 60 }
+        sort_order: { type: integer, default: 0 }
+        is_active: { type: boolean, default: true }
+        use_cases: { type: array, items: { type: string, maxLength: 200 }, maxItems: 20 }
+        roles:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [role_slug, default_qty]
+            properties:
+              role_slug: { type: string }
+              default_qty: { type: integer, minimum: 1, maximum: 20 }
+
+    # ───── site content (About, Mission, Vision ...) ─────
+    SiteContent:
+      type: object
+      required: [company, hero, about, why_us, stats, process, faqs, compliance]
+      properties:
+        company:
+          type: object
+          required: [name, tagline, email, phone, address]
+          properties:
+            name: { type: string }
+            tagline: { type: string }
+            email: { type: string }
+            phone: { type: string }
+            whatsapp: { type: string }
+            address: { type: string }
+            ntn: { type: string }
+            socials:
+              type: object
+              additionalProperties: { type: string }
+        hero:
+          type: object
+          required: [headline, subheadline, primary_cta, secondary_cta]
+          properties:
+            headline: { type: string }
+            subheadline: { type: string }
+            primary_cta: { type: string }
+            secondary_cta: { type: string }
+        about:
+          type: object
+          required: [story, mission, vision, values]
+          properties:
+            story: { type: string }
+            mission: { type: string }
+            vision: { type: string }
+            values:
+              type: array
+              items: { $ref: '#/components/schemas/TitledItem' }
+            goals:
+              type: array
+              items: { type: string }
+        why_us:
+          type: array
+          items: { $ref: '#/components/schemas/TitledItem' }
+        stats:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: string }
+        process:
+          type: array
+          items: { $ref: '#/components/schemas/TitledItem' }
+        compliance:
+          type: array
+          items: { $ref: '#/components/schemas/TitledItem' }
+        faqs:
+          type: array
+          items:
+            type: object
+            required: [question, answer]
+            properties:
+              question: { type: string }
+              answer: { type: string }
+    TitledItem:
+      type: object
+      required: [title, description]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        icon: { type: string }
+
+    # ───── uploads ─────
+    PresignRequest:
+      type: object
+      required: [file_name, mime_type, size_bytes]
+      properties:
+        file_name: { type: string, maxLength: 200 }
+        mime_type:
+          type: string
+          enum:
+            - application/pdf
+            - application/msword
+            - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+        size_bytes: { type: integer, minimum: 1, maximum: 10485760 }
+    PresignResponse:
+      type: object
+      required: [upload_url, file_key, expires_in]
+      properties:
+        upload_url: { type: string, format: uri, description: 'HTTP PUT target' }
+        file_key: { type: string }
+        expires_in: { type: integer }
+
+    # ───── hire request (public) ─────
+    HireRequestItemInput:
+      type: object
+      required: [role_slug, quantity, seniority]
+      properties:
+        role_slug: { type: string }
+        quantity: { type: integer, minimum: 1, maximum: 20 }
+        seniority: { $ref: '#/components/schemas/Seniority' }
+        skills_note: { type: string, maxLength: 500 }
+    OrganizationInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 200 }
+        department_or_industry: { type: string, maxLength: 200 }
+        ntn: { type: string, maxLength: 20 }
+        city: { type: string, maxLength: 80 }
+        website: { type: string, maxLength: 200 }
+    ContactInput:
+      type: object
+      required: [name, email, phone]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        designation: { type: string, maxLength: 120 }
+        email: { type: string, format: email }
+        phone: { type: string, pattern: '^\+?[0-9 \-]{7,20}$' }
+        whatsapp: { type: string, pattern: '^\+?[0-9 \-]{7,20}$' }
+    HireRequestCreate:
+      type: object
+      required:
+        - org_type
+        - request_type
+        - items
+        - duration_months
+        - start_date
+        - engagement_mode
+        - contract_type
+        - organization
+        - contact
+        - description
+        - turnstile_token
+        - consent
+      properties:
+        org_type: { $ref: '#/components/schemas/OrgType' }
+        request_type: { $ref: '#/components/schemas/RequestType' }
+        squad_slug: { type: string }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 15
+          items: { $ref: '#/components/schemas/HireRequestItemInput' }
+        duration_months: { type: integer, minimum: 1, maximum: 36 }
+        start_date: { type: string, format: date }
+        engagement_mode: { $ref: '#/components/schemas/EngagementMode' }
+        city: { type: string, maxLength: 80 }
+        contract_type: { $ref: '#/components/schemas/ContractType' }
+        procurement_mode: { $ref: '#/components/schemas/ProcurementMode' }
+        tender_ref: { type: string, maxLength: 120 }
+        budget_range: { $ref: '#/components/schemas/BudgetRange' }
+        organization: { $ref: '#/components/schemas/OrganizationInput' }
+        contact: { $ref: '#/components/schemas/ContactInput' }
+        description: { type: string, minLength: 20, maxLength: 3000 }
+        attachment_keys:
+          type: array
+          maxItems: 5
+          items: { type: string }
+        turnstile_token: { type: string }
+        consent: { type: boolean, const: true }
+    HireRequestCreated:
+      type: object
+      required: [ref_no, status, created_at]
+      properties:
+        ref_no: { type: string, examples: ['DS-2026-0001'] }
+        status: { $ref: '#/components/schemas/RequestStatus' }
+        created_at: { type: string, format: date-time }
+    TrackResponse:
+      type: object
+      required: [ref_no, status, updated_at, timeline]
+      properties:
+        ref_no: { type: string }
+        status: { $ref: '#/components/schemas/RequestStatus' }
+        updated_at: { type: string, format: date-time }
+        timeline:
+          type: array
+          items:
+            type: object
+            required: [status, at]
+            properties:
+              status: { $ref: '#/components/schemas/RequestStatus' }
+              at: { type: string, format: date-time }
+    ContactMessageCreate:
+      type: object
+      required: [name, email, subject, message, turnstile_token]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email }
+        phone: { type: string, maxLength: 20 }
+        subject: { type: string, minLength: 2, maxLength: 200 }
+        message: { type: string, minLength: 10, maxLength: 3000 }
+        turnstile_token: { type: string }
+
+    # ───── auth ─────
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, maxLength: 128 }
+    AuthUser:
+      type: object
+      required: [id, name, email, role, is_active]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/UserRole' }
+        is_active: { type: boolean }
+        last_login_at: { type: [string, 'null'], format: date-time }
+    UserCreate:
+      type: object
+      required: [name, email, role, password]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/UserRole' }
+        password: { type: string, minLength: 10, maxLength: 128 }
+    UserUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        role: { $ref: '#/components/schemas/UserRole' }
+        is_active: { type: boolean }
+        password: { type: string, minLength: 10, maxLength: 128 }
+
+    # ───── hire request (admin) ─────
+    HireRequestSummary:
+      type: object
+      required:
+        [id, ref_no, org_name, org_type, request_type, total_headcount, duration_months, engagement_mode, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        ref_no: { type: string }
+        org_name: { type: string }
+        org_type: { $ref: '#/components/schemas/OrgType' }
+        request_type: { $ref: '#/components/schemas/RequestType' }
+        squad_name: { type: [string, 'null'] }
+        total_headcount: { type: integer }
+        duration_months: { type: integer }
+        engagement_mode: { $ref: '#/components/schemas/EngagementMode' }
+        budget_range: { $ref: '#/components/schemas/BudgetRange' }
+        status: { $ref: '#/components/schemas/RequestStatus' }
+        assigned_to:
+          oneOf: [{ $ref: '#/components/schemas/UserRef' }, { type: 'null' }]
+        created_at: { type: string, format: date-time }
+    HireRequestPage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/HireRequestSummary' } }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+    HireRequestItem:
+      type: object
+      required: [id, role, quantity, seniority]
+      properties:
+        id: { type: string, format: uuid }
+        role: { $ref: '#/components/schemas/ServiceRole' }
+        quantity: { type: integer }
+        seniority: { $ref: '#/components/schemas/Seniority' }
+        skills_note: { type: [string, 'null'] }
+    Attachment:
+      type: object
+      required: [id, file_name, mime_type, size_bytes]
+      properties:
+        id: { type: string, format: uuid }
+        file_name: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer }
+    Activity:
+      type: object
+      required: [id, type, body, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/ActivityType' }
+        body: { type: string }
+        user:
+          oneOf: [{ $ref: '#/components/schemas/UserRef' }, { type: 'null' }]
+        created_at: { type: string, format: date-time }
+    HireRequestDetail:
+      allOf:
+        - $ref: '#/components/schemas/HireRequestSummary'
+        - type: object
+          required: [organization, contact, items, attachments, activities, start_date, contract_type, description]
+          properties:
+            organization: { $ref: '#/components/schemas/OrganizationInput' }
+            contact: { $ref: '#/components/schemas/ContactInput' }
+            items: { type: array, items: { $ref: '#/components/schemas/HireRequestItem' } }
+            attachments: { type: array, items: { $ref: '#/components/schemas/Attachment' } }
+            activities: { type: array, items: { $ref: '#/components/schemas/Activity' } }
+            start_date: { type: string, format: date }
+            city: { type: [string, 'null'] }
+            contract_type: { $ref: '#/components/schemas/ContractType' }
+            procurement_mode:
+              oneOf: [{ $ref: '#/components/schemas/ProcurementMode' }, { type: 'null' }]
+            tender_ref: { type: [string, 'null'] }
+            description: { type: string }
+            engagement_id: { type: [string, 'null'], format: uuid }
+    StatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/RequestStatus' }
+        note: { type: string, maxLength: 2000 }
+        notify_client: { type: boolean, default: false }
+
+    # ───── talent ─────
+    Talent:
+      type: object
+      required: [id, full_name, email, phone, primary_role, seniority, skills, experience_years, availability, is_active]
+      properties:
+        id: { type: string, format: uuid }
+        full_name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        primary_role: { $ref: '#/components/schemas/ServiceRole' }
+        seniority: { $ref: '#/components/schemas/Seniority' }
+        skills: { type: array, items: { type: string } }
+        experience_years: { type: number }
+        availability: { $ref: '#/components/schemas/Availability' }
+        monthly_cost: { type: [number, 'null'], description: 'Internal cost, visible to SUPER_ADMIN/OPS only' }
+        city: { type: [string, 'null'] }
+        cv_attachment_id: { type: [string, 'null'], format: uuid }
+        is_active: { type: boolean }
+    TalentInput:
+      type: object
+      required: [full_name, email, phone, primary_role_slug, seniority, experience_years, availability]
+      properties:
+        full_name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email }
+        phone: { type: string, maxLength: 20 }
+        primary_role_slug: { type: string }
+        seniority: { $ref: '#/components/schemas/Seniority' }
+        skills: { type: array, items: { type: string, maxLength: 60 }, maxItems: 40 }
+        experience_years: { type: number, minimum: 0, maximum: 50 }
+        availability: { $ref: '#/components/schemas/Availability' }
+        monthly_cost: { type: number, minimum: 0 }
+        city: { type: string, maxLength: 80 }
+        cv_file_key: { type: string }
+    TalentPage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Talent' } }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+    ItemMatches:
+      type: object
+      required: [item_id, role_slug, quantity, candidates]
+      properties:
+        item_id: { type: string, format: uuid }
+        role_slug: { type: string }
+        quantity: { type: integer }
+        candidates:
+          type: array
+          items:
+            type: object
+            required: [talent, score]
+            properties:
+              talent: { $ref: '#/components/schemas/Talent' }
+              score: { type: number, minimum: 0, maximum: 1 }
+
+    # ───── engagements ─────
+    Assignment:
+      type: object
+      required: [id, talent, role, start_date]
+      properties:
+        id: { type: string, format: uuid }
+        talent: { $ref: '#/components/schemas/Talent' }
+        role: { $ref: '#/components/schemas/ServiceRole' }
+        start_date: { type: string, format: date }
+        end_date: { type: [string, 'null'], format: date }
+    Engagement:
+      type: object
+      required: [id, request_id, ref_no, org_name, start_date, end_date, monthly_fee, currency, status, assignments]
+      properties:
+        id: { type: string, format: uuid }
+        request_id: { type: string, format: uuid }
+        ref_no: { type: string }
+        org_name: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        monthly_fee: { type: number }
+        currency: { type: string, default: PKR }
+        status: { $ref: '#/components/schemas/EngagementStatus' }
+        renewed_from_id: { type: [string, 'null'], format: uuid }
+        assignments: { type: array, items: { $ref: '#/components/schemas/Assignment' } }
+    EngagementCreate:
+      type: object
+      required: [start_date, end_date, monthly_fee, assignments]
+      properties:
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        monthly_fee: { type: number, minimum: 0 }
+        currency: { type: string, default: PKR, maxLength: 3 }
+        assignments:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [talent_id, role_slug]
+            properties:
+              talent_id: { type: string, format: uuid }
+              role_slug: { type: string }
+    EngagementUpdate:
+      type: object
+      properties:
+        end_date: { type: string, format: date }
+        monthly_fee: { type: number, minimum: 0 }
+        status: { $ref: '#/components/schemas/EngagementStatus' }
+    EngagementPage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Engagement' } }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+
+    # ───── system ─────
+    DashboardStats:
+      type: object
+      required:
+        [new_requests, open_pipeline, active_engagements, available_talent, monthly_recurring_revenue, renewals_due_30d, requests_by_status]
+      properties:
+        new_requests: { type: integer }
+        open_pipeline: { type: integer }
+        active_engagements: { type: integer }
+        available_talent: { type: integer }
+        monthly_recurring_revenue: { type: number }
+        renewals_due_30d: { type: integer }
+        requests_by_status:
+          type: object
+          additionalProperties: { type: integer }
+    AuditLog:
+      type: object
+      required: [id, action, entity, entity_id, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        user:
+          oneOf: [{ $ref: '#/components/schemas/UserRef' }, { type: 'null' }]
+        action: { type: string, examples: ['hire_request.status_changed'] }
+        entity: { type: string }
+        entity_id: { type: string }
+        diff: { type: [object, 'null'] }
+        ip: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+    AuditLogPage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/AuditLog' } }
+        meta: { $ref: '#/components/schemas/PageMeta' }
+    ContactMessage:
+      type: object
+      required: [id, name, email, subject, message, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: [string, 'null'] }
+        subject: { type: string }
+        message: { type: string }
+        created_at: { type: string, format: date-time }
+    ContactMessagePage:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ContactMessage' } }
+        meta: { $ref: '#/components/schemas/PageMeta' }

@@ -1,0 +1,192 @@
+[
+  {
+    "slug": "project-manager",
+    "title": "Project Manager",
+    "category": "MANAGEMENT",
+    "description": "Plans sprints, manages scope and timelines, and is the single point of contact between your team and the squad.",
+    "skills": ["Agile/Scrum", "Jira", "Stakeholder management", "Risk management", "Reporting"]
+  },
+  {
+    "slug": "frontend-developer",
+    "title": "Frontend Developer",
+    "category": "DEVELOPMENT",
+    "description": "Builds fast, responsive and accessible web interfaces.",
+    "skills": ["React", "Next.js", "TypeScript", "Tailwind CSS", "REST/GraphQL"]
+  },
+  {
+    "slug": "backend-developer",
+    "title": "Backend Developer",
+    "category": "DEVELOPMENT",
+    "description": "Designs APIs, databases and integrations that are secure and scale.",
+    "skills": ["Python", "FastAPI", "Node.js", "PostgreSQL", "Docker"]
+  },
+  {
+    "slug": "full-stack-developer",
+    "title": "Full-Stack Developer",
+    "category": "DEVELOPMENT",
+    "description": "Delivers features end-to-end, from database to UI.",
+    "skills": ["React", "Node.js", "Python", "SQL", "Cloud deployment"]
+  },
+  {
+    "slug": "mobile-app-developer",
+    "title": "Mobile App Developer",
+    "category": "DEVELOPMENT",
+    "description": "Builds Android and iOS apps for citizens, customers and field staff.",
+    "skills": ["Flutter", "React Native", "Kotlin", "Swift", "Firebase"]
+  },
+  {
+    "slug": "ui-ux-designer",
+    "title": "UI/UX Designer",
+    "category": "DEVELOPMENT",
+    "description": "Designs user journeys, wireframes and polished interfaces.",
+    "skills": ["Figma", "User research", "Prototyping", "Design systems", "Accessibility"]
+  },
+  {
+    "slug": "qa-tester",
+    "title": "QA Tester",
+    "category": "DEVELOPMENT",
+    "description": "Finds bugs before your users do, with manual and automated testing.",
+    "skills": ["Manual testing", "Test cases", "Playwright/Selenium", "API testing", "Bug tracking"]
+  },
+  {
+    "slug": "devops-engineer",
+    "title": "DevOps Engineer",
+    "category": "DEVELOPMENT",
+    "description": "Automates builds, deployments and monitoring for reliable releases.",
+    "skills": ["Docker", "Kubernetes", "CI/CD", "Linux", "AWS/Azure"]
+  },
+  {
+    "slug": "erp-crm-consultant",
+    "title": "ERP/CRM Consultant",
+    "category": "DEVELOPMENT",
+    "description": "Implements and customizes ERP and CRM systems around your processes.",
+    "skills": ["Odoo", "Dynamics 365", "Salesforce", "Process mapping", "Data migration"]
+  },
+
+  {
+    "slug": "social-media-manager",
+    "title": "Social Media Manager",
+    "category": "DIGITAL_MEDIA",
+    "description": "Runs your pages, content calendar and community engagement.",
+    "skills": [
+      "Content calendar",
+      "Meta Business Suite",
+      "Community management",
+      "Analytics",
+      "Crisis comms"
+    ]
+  },
+  {
+    "slug": "graphic-designer",
+    "title": "Graphic Designer",
+    "category": "DIGITAL_MEDIA",
+    "description": "Creates posts, campaign creatives, infographics and print material.",
+    "skills": ["Photoshop", "Illustrator", "Canva", "Branding", "Infographics"]
+  },
+  {
+    "slug": "video-editor",
+    "title": "Video Editor",
+    "category": "DIGITAL_MEDIA",
+    "description": "Edits reels, explainers and awareness videos.",
+    "skills": ["Premiere Pro", "After Effects", "CapCut", "Motion graphics", "Subtitling"]
+  },
+  {
+    "slug": "content-writer",
+    "title": "Content Writer",
+    "category": "DIGITAL_MEDIA",
+    "description": "Writes clear English and Urdu content for web, social and press.",
+    "skills": ["Web copy", "Press releases", "Urdu writing", "Blogs", "Scripts"]
+  },
+
+  {
+    "slug": "data-analyst",
+    "title": "Data Analyst",
+    "category": "DATA_AI",
+    "description": "Cleans, analyzes and turns your data into decisions.",
+    "skills": ["SQL", "Excel", "Python", "Statistics", "Data cleaning"]
+  },
+  {
+    "slug": "power-bi-developer",
+    "title": "Power BI Developer",
+    "category": "DATA_AI",
+    "description": "Builds live dashboards and MIS reports for management.",
+    "skills": ["Power BI", "DAX", "Power Query", "Data modeling", "SQL"]
+  },
+  {
+    "slug": "data-engineer",
+    "title": "Data Engineer",
+    "category": "DATA_AI",
+    "description": "Builds pipelines that bring data from many systems into one place.",
+    "skills": ["ETL", "Airflow", "PostgreSQL", "Python", "Data warehousing"]
+  },
+  {
+    "slug": "ai-ml-engineer",
+    "title": "AI/ML Engineer",
+    "category": "DATA_AI",
+    "description": "Builds chatbots, document AI, predictions and automation.",
+    "skills": ["Python", "LLMs/RAG", "Machine learning", "FastAPI", "Vector databases"]
+  },
+
+  {
+    "slug": "network-engineer",
+    "title": "Network Engineer",
+    "category": "IT_SUPPORT",
+    "description": "Designs and maintains LAN/WAN, Wi-Fi and firewalls.",
+    "skills": ["Cisco", "MikroTik", "Firewalls", "VPN", "Structured cabling"]
+  },
+  {
+    "slug": "helpdesk-support",
+    "title": "Helpdesk Support",
+    "category": "IT_SUPPORT",
+    "description": "First-line support for users, devices and printers.",
+    "skills": ["Ticketing", "Windows", "Office 365", "Hardware troubleshooting", "User training"]
+  },
+  {
+    "slug": "system-administrator",
+    "title": "System Administrator",
+    "category": "IT_SUPPORT",
+    "description": "Keeps servers, email, backups and user accounts running.",
+    "skills": ["Windows Server", "Linux", "Active Directory", "Backups", "Virtualization"]
+  },
+  {
+    "slug": "security-officer",
+    "title": "Security Officer",
+    "category": "IT_SUPPORT",
+    "description": "Protects systems and data with policies, monitoring and audits.",
+    "skills": [
+      "Vulnerability assessment",
+      "SIEM",
+      "ISO 27001 practices",
+      "Incident response",
+      "Security awareness"
+    ]
+  },
+
+  {
+    "slug": "seo-specialist",
+    "title": "SEO Specialist",
+    "category": "DIGITAL_MARKETING",
+    "description": "Gets your website found on Google.",
+    "skills": [
+      "Technical SEO",
+      "Keyword research",
+      "On-page SEO",
+      "Link building",
+      "Search Console"
+    ]
+  },
+  {
+    "slug": "ads-manager",
+    "title": "Ads Manager",
+    "category": "DIGITAL_MARKETING",
+    "description": "Runs and optimizes paid campaigns on Meta, Google and TikTok.",
+    "skills": ["Meta Ads", "Google Ads", "TikTok Ads", "Conversion tracking", "A/B testing"]
+  },
+  {
+    "slug": "copywriter",
+    "title": "Copywriter",
+    "category": "DIGITAL_MARKETING",
+    "description": "Writes ads, landing pages and emails that convert.",
+    "skills": ["Ad copy", "Landing pages", "Email marketing", "Brand voice", "CTA writing"]
+  }
+]

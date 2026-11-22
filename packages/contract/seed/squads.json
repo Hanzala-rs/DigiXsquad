@@ -1,0 +1,100 @@
+[
+  {
+    "slug": "development-squad",
+    "name": "Development Squad",
+    "tagline": "Ship web and mobile products without building an in-house team.",
+    "description": "A managed product team that plans, builds, tests and delivers software every sprint: portals, apps, ERP/CRM customizations and integrations.",
+    "icon": "code-2",
+    "sort_order": 1,
+    "use_cases": [
+      "e-Governance portals and citizen apps",
+      "Company websites and web apps",
+      "ERP/CRM customization",
+      "API integrations"
+    ],
+    "roles": [
+      { "role_slug": "project-manager", "default_qty": 1 },
+      { "role_slug": "frontend-developer", "default_qty": 1 },
+      { "role_slug": "backend-developer", "default_qty": 1 },
+      { "role_slug": "qa-tester", "default_qty": 1 }
+    ]
+  },
+  {
+    "slug": "digital-media-squad",
+    "name": "Digital Media Squad",
+    "tagline": "Your always-on content and social media team.",
+    "description": "Daily posts, campaign creatives, videos and copy for departments and brands, with one monthly plan and one point of contact.",
+    "icon": "clapperboard",
+    "sort_order": 2,
+    "use_cases": [
+      "Department social media handling",
+      "Public awareness campaigns",
+      "Brand management",
+      "Event coverage"
+    ],
+    "roles": [
+      { "role_slug": "social-media-manager", "default_qty": 1 },
+      { "role_slug": "graphic-designer", "default_qty": 1 },
+      { "role_slug": "video-editor", "default_qty": 1 },
+      { "role_slug": "content-writer", "default_qty": 1 }
+    ]
+  },
+  {
+    "slug": "data-ai-squad",
+    "name": "Data & AI Squad",
+    "tagline": "Turn records into dashboards, and processes into automation.",
+    "description": "Digitize data, build MIS and Power BI dashboards, and add AI chatbots and automation on top.",
+    "icon": "brain-circuit",
+    "sort_order": 3,
+    "use_cases": [
+      "Data digitization and MIS",
+      "Management dashboards",
+      "Chatbots and document AI",
+      "Process automation"
+    ],
+    "roles": [
+      { "role_slug": "data-analyst", "default_qty": 1 },
+      { "role_slug": "power-bi-developer", "default_qty": 1 },
+      { "role_slug": "ai-ml-engineer", "default_qty": 1 }
+    ]
+  },
+  {
+    "slug": "it-support-squad",
+    "name": "IT Support Squad",
+    "tagline": "Networks, servers, helpdesk and security, fully managed.",
+    "description": "On-site or remote IT operations for offices and departments, from daily helpdesk to network and cybersecurity.",
+    "icon": "server-cog",
+    "sort_order": 4,
+    "use_cases": [
+      "Office IT operations",
+      "Network setup and maintenance",
+      "Cybersecurity and audits",
+      "Helpdesk for staff"
+    ],
+    "roles": [
+      { "role_slug": "network-engineer", "default_qty": 1 },
+      { "role_slug": "helpdesk-support", "default_qty": 1 },
+      { "role_slug": "system-administrator", "default_qty": 1 },
+      { "role_slug": "security-officer", "default_qty": 1 }
+    ]
+  },
+  {
+    "slug": "digital-marketing-squad",
+    "name": "Digital Marketing Squad",
+    "tagline": "More traffic, more leads, measurable results.",
+    "description": "SEO, paid ads and conversion copy run as one growth team with monthly reporting.",
+    "icon": "megaphone",
+    "sort_order": 5,
+    "use_cases": [
+      "SEO and Google ranking",
+      "Paid ads on Meta, Google and TikTok",
+      "Lead generation",
+      "Landing pages and email"
+    ],
+    "roles": [
+      { "role_slug": "seo-specialist", "default_qty": 1 },
+      { "role_slug": "ads-manager", "default_qty": 1 },
+      { "role_slug": "copywriter", "default_qty": 1 }
+    ]
+  }
+]
