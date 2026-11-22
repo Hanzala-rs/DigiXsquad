@@ -1,0 +1,24 @@
+{
+  "name": "@digixsquad/contract",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenAPI contract + seed data shared by apps/web (TS) and apps/api (Python)",
+  "files": [
+    "openapi.yaml",
+    "seed"
+  ],
+  "exports": {
+    "./openapi.yaml": "./openapi.yaml",
+    "./seed/*": "./seed/*"
+  },
+  "scripts": {
+    "lint": "redocly lint openapi.yaml --config redocly.yaml && node scripts/validate-seeds.mjs",
+    "test": "node scripts/validate-seeds.mjs"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.11.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.8.1"
+  }
+}

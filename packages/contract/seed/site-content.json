@@ -1,0 +1,179 @@
+{
+  "company": {
+    "name": "DigixSquad",
+    "tagline": "Your IT team, without the hiring hassle.",
+    "email": "info@digixsquad.com",
+    "phone": "+92 300 0000000",
+    "whatsapp": "+92 300 0000000",
+    "address": "TBD, Pakistan",
+    "ntn": "TBD",
+    "socials": {
+      "linkedin": "",
+      "facebook": "",
+      "instagram": "",
+      "x": ""
+    }
+  },
+  "hero": {
+    "headline": "Your IT team, ready in days. Not months.",
+    "subheadline": "Hire a skilled professional or a complete squad on a monthly contract. We hire, train, manage and pay. You get the work done.",
+    "primary_cta": "Hire a Squad",
+    "secondary_cta": "Explore Roles"
+  },
+  "about": {
+    "story": "DigixSquad was started to solve a problem every department and company in Pakistan knows well: digital work can't wait, but hiring takes months, training costs money and good people leave. We built a bench of skilled IT professionals and organized them into ready-to-deploy squads, so our clients can start the work right away and pay one simple monthly fee.",
+    "mission": "To give every organization, from government departments to growing businesses, instant access to skilled and managed IT teams, so they can deliver digital projects without the cost, delay and risk of hiring.",
+    "vision": "To be Pakistan's most trusted squad-as-a-service partner, powering digital transformation across the public and private sectors and taking Pakistani tech talent to the world.",
+    "values": [
+      {
+        "title": "Ownership",
+        "description": "We treat your project as our own and stand behind every deliverable.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Transparency",
+        "description": "Clear contracts, clear monthly reports, no hidden costs.",
+        "icon": "eye"
+      },
+      {
+        "title": "Security First",
+        "description": "Your data stays protected with NDAs, access controls and secure practices.",
+        "icon": "lock"
+      },
+      {
+        "title": "Agility",
+        "description": "Scale your squad up or down month to month as your needs change.",
+        "icon": "zap"
+      },
+      {
+        "title": "Quality",
+        "description": "Vetted professionals, peer review and QA built into every squad.",
+        "icon": "badge-check"
+      },
+      {
+        "title": "Growth",
+        "description": "We invest in training our people, so you always get current skills.",
+        "icon": "trending-up"
+      }
+    ],
+    "goals": [
+      "Deploy a vetted professional within 7 to 14 days of a signed request",
+      "Support e-governance and digitization across federal and provincial departments",
+      "Help businesses adopt ERP, automation and AI without in-house hiring",
+      "Build a strong, continuously trained bench of Pakistani IT talent"
+    ]
+  },
+  "why_us": [
+    {
+      "title": "No hiring hassle",
+      "description": "No recruitment, training, payroll or HR. We handle all of it.",
+      "icon": "user-check"
+    },
+    {
+      "title": "Ready in days",
+      "description": "Vetted professionals from our bench, matched to your requirement.",
+      "icon": "timer"
+    },
+    {
+      "title": "Flexible monthly contracts",
+      "description": "One month or twelve. Monthly or project-based. On-site or remote.",
+      "icon": "calendar-range"
+    },
+    {
+      "title": "Free replacement",
+      "description": "Not the right fit? We replace the resource at no extra cost.",
+      "icon": "refresh-cw"
+    },
+    {
+      "title": "Managed delivery",
+      "description": "Every squad comes with a lead or PM, so you manage outcomes, not people.",
+      "icon": "layout-dashboard"
+    },
+    {
+      "title": "Government-ready",
+      "description": "PPRA-compliant procurement support, registered entity and NDA-backed data security.",
+      "icon": "landmark"
+    }
+  ],
+  "stats": [
+    { "label": "Professionals on bench", "value": "TBD" },
+    { "label": "Squads deployed", "value": "TBD" },
+    { "label": "Average time to deploy", "value": "TBD" },
+    { "label": "Client retention", "value": "TBD" }
+  ],
+  "process": [
+    {
+      "title": "Tell us what you need",
+      "description": "Fill the request form with roles, duration and work mode.",
+      "icon": "clipboard-list"
+    },
+    {
+      "title": "We match the right people",
+      "description": "We shortlist from our bench and share profiles within days.",
+      "icon": "users"
+    },
+    {
+      "title": "Onboard and start",
+      "description": "Sign a simple monthly contract. The squad starts on-site or remote.",
+      "icon": "rocket"
+    },
+    {
+      "title": "Monthly delivery and reporting",
+      "description": "Track progress through monthly reports and a single point of contact.",
+      "icon": "bar-chart-3"
+    },
+    {
+      "title": "Renew, scale or wrap up",
+      "description": "Extend, add roles or close at the end of the term. No long lock-ins.",
+      "icon": "repeat"
+    }
+  ],
+  "compliance": [
+    {
+      "title": "PPRA-compliant procurement",
+      "description": "We respond to RFQs, open tenders and direct contracting under PPRA rules.",
+      "icon": "file-check"
+    },
+    {
+      "title": "Registered entity",
+      "description": "NTN and tax registration available for every invoice.",
+      "icon": "building-2"
+    },
+    {
+      "title": "NDA and data confidentiality",
+      "description": "Every squad member signs an NDA. Access is role-based and logged.",
+      "icon": "file-lock"
+    },
+    {
+      "title": "Secure infrastructure",
+      "description": "Encrypted storage and backups, with on-premise deployment available on request.",
+      "icon": "server"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "What is a squad?",
+      "answer": "A small team of 3 to 8 professionals with all the roles a project needs, provided on a monthly fee. You don't hire, train or pay salaries; we do."
+    },
+    {
+      "question": "Can I hire just one person?",
+      "answer": "Yes. You can request a single role, such as a QA tester or a Power BI developer, for as little as one month."
+    },
+    {
+      "question": "Will the team work on-site or remotely?",
+      "answer": "Either. Choose on-site, remote or hybrid when you submit your request."
+    },
+    {
+      "question": "How quickly can you deploy?",
+      "answer": "Most single roles are deployed within 7 to 14 days. Full squads depend on size and skills."
+    },
+    {
+      "question": "Do you work with government departments?",
+      "answer": "Yes. We support PPRA procurement processes, provide registration documents, and sign NDAs for data security."
+    },
+    {
+      "question": "What if a resource isn't the right fit?",
+      "answer": "Tell us and we'll replace them at no extra cost."
+    }
+  ]
+}
