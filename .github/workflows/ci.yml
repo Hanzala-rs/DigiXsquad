@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web + contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Contract lint (OpenAPI + seed data)
+        run: pnpm contract:lint
+
+      - name: Generated client is up to date
+        run: |
+          pnpm contract:gen
+          git diff --exit-code -- packages/api-client/src/generated \
+            || (echo "::error::Run 'pnpm contract:gen' and commit the result" && exit 1)
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  api:
+    name: API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: digixsquad
+          POSTGRES_USER: digix
+          POSTGRES_PASSWORD: digix
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U digix -d digixsquad"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://digix:digix@localhost:5432/digixsquad
+      TEST_DATABASE_URL: postgresql+asyncpg://digix:digix@localhost:5432/digixsquad_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+
+      - run: uv sync --locked
+
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+
+      - name: Migrate + seed (twice, must be idempotent)
+        run: |
+          uv run alembic upgrade head
+          uv run python -m scripts.seed
+          uv run python -m scripts.seed
+          uv run alembic check
+
+      - name: Create test database
+        run: PGPASSWORD=digix psql -h localhost -U digix -d digixsquad -c 'CREATE DATABASE digixsquad_test'
+
+      - run: uv run python -m pytest
+
+      - name: Contract diff (implemented routes vs openapi.yaml)
+        run: uv run python -m scripts.check_contract
