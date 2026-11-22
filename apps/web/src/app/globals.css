@@ -184,7 +184,14 @@ html[data-intro='reveal'] .ds-intro {
   display: grid;
   place-items: center;
   background: linear-gradient(160deg, #1a1a1a, #0d0d0d);
-  clip-path: polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px);
+  clip-path: polygon(
+    28px 0,
+    100% 0,
+    100% calc(100% - 28px),
+    calc(100% - 28px) 100%,
+    0 100%,
+    0 28px
+  );
   transform: scale(0.4) rotate(-6deg);
   opacity: 0;
   animation: ds-pop-in 0.75s var(--ease-out) 0.15s forwards;
@@ -376,7 +383,12 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   width: 150%;
   aspect-ratio: 1;
   translate: -50% -50%;
-  background: radial-gradient(circle, rgb(255 106 0 / 0.55) 0%, rgb(232 68 15 / 0.25) 35%, transparent 65%);
+  background: radial-gradient(
+    circle,
+    rgb(255 106 0 / 0.55) 0%,
+    rgb(232 68 15 / 0.25) 35%,
+    transparent 65%
+  );
   filter: blur(10px);
   animation: ds-pulse 4s ease-in-out infinite;
 }
@@ -394,7 +406,12 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   height: 74%;
   translate: -50% 0;
   clip-path: polygon(22% 0, 78% 0, 100% 22%, 100% 100%, 0 100%, 0 22%);
-  background: linear-gradient(180deg, rgb(255 154 31 / 0.9), rgb(232 68 15 / 0.15) 70%, transparent);
+  background: linear-gradient(
+    180deg,
+    rgb(255 154 31 / 0.9),
+    rgb(232 68 15 / 0.15) 70%,
+    transparent
+  );
 }
 .ds-frame::after {
   content: '';
@@ -640,5 +657,13 @@ html[data-intro='reveal'] {
     animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition: none !important;
+  }
+}
+
+/* Formal (light) sections, e.g. Government page: darker orange keeps AA contrast on light bg */
+.formal {
+  --muted-foreground: #4a4a4a;
+  & .text-primary {
+    color: #b84300;
   }
 }

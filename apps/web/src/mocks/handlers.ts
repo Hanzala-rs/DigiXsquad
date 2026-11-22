@@ -1,5 +1,6 @@
+import { CreateContactMessageBody } from '@digixsquad/api-client/zod';
 import { http, HttpResponse } from 'msw';
-import { roles, siteContent, squads } from './fixtures';
+import { roles, siteContent, squads } from '@/lib/seed-data';
 
 /**
  * MSW handlers for the public contract endpoints, answered from packages/contract/seed.
@@ -27,5 +28,22 @@ export const handlers = [
   http.get(`${API}/roles`, ({ request }) => {
     const category = new URL(request.url).searchParams.get('category');
     return HttpResponse.json(category ? roles.filter((r) => r.category === category) : roles);
+  }),
+
+  http.post(`${API}/contact`, async ({ request }) => {
+    const parsed = CreateContactMessageBody.safeParse(await request.json());
+    if (!parsed.success) {
+      return HttpResponse.json(
+        {
+          detail: parsed.error.issues.map((i) => ({
+            loc: ['body', ...i.path],
+            msg: i.message,
+            type: i.code,
+          })),
+        },
+        { status: 422 },
+      );
+    }
+    return HttpResponse.json({ ok: true }, { status: 201 });
   }),
 ];

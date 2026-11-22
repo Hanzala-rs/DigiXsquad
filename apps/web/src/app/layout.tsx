@@ -4,7 +4,9 @@ import { introScript } from '@/components/home/intro-script';
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
 import { WhatsAppButton } from '@/components/layout/WhatsAppButton';
+import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { getSiteContent } from '@/lib/site-content';
+import { siteUrl } from '@/lib/site-url';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -20,10 +22,11 @@ const chakra = Chakra_Petch({
 export async function generateMetadata(): Promise<Metadata> {
   const { company, hero } = await getSiteContent();
   return {
-    metadataBase: new URL(process.env.PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+    metadataBase: new URL(siteUrl),
     title: { default: `${company.name} | ${company.tagline}`, template: `%s | ${company.name}` },
     description: hero.subheadline,
     openGraph: { siteName: company.name, type: 'website', locale: 'en_US' },
+    twitter: { card: 'summary_large_image' },
   };
 }
 
@@ -32,10 +35,15 @@ export const viewport: Viewport = { themeColor: '#0a0a0a', colorScheme: 'dark' }
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { company, hero } = await getSiteContent();
   return (
-    <html lang="en" className={`dark ${inter.variable} ${chakra.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`dark ${inter.variable} ${chakra.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Sets html[data-intro] before first paint; see components/home/intro-script.ts */}
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
+        <OrganizationJsonLd company={company} />
       </head>
       <body className="min-h-svh">
         <a

@@ -6,7 +6,7 @@ import {
   ListRolesResponse,
   ListSquadsResponse,
 } from '@digixsquad/api-client/zod';
-import { stableUuid } from './fixtures';
+import { stableUuid } from '@/lib/seed-data';
 import { server } from './node';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
