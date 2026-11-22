@@ -18,7 +18,20 @@ pnpm --filter @digixsquad/web test
 | `src/components/home/` | `IntroSplash` + `HomeHero` (port of `docs/prototypes/intro.html`) and `intro-script.ts` timeline |
 | `src/components/layout/` | Navbar, Footer, floating WhatsApp (`wa.me`) button |
 | `src/lib/site-content.ts` | `getSiteContent` from the API, seed JSON as fallback |
-| `src/mocks/` | MSW handlers + contract-shaped fixtures built from the seeds |
+| `src/app/(site)/` | Public pages + their layout (navbar, footer, WhatsApp button) |
+| `src/app/admin/` | Admin: `login/` (public) and `(panel)/` (session-guarded shell) |
+| `src/lib/admin/` | `authed()` session refresh, typed admin API, RBAC matrix, formatting |
+| `src/mocks/` | MSW handlers; `db.ts` is the in-memory backend shared by public + admin mocks |
+
+## Admin
+
+`/admin` uses the API's httpOnly cookies. `AdminGuard` loads `GET /auth/me`; on a 401 every admin call refreshes the
+session once via `/auth/refresh` (concurrent 401s share one refresh) and retries; if that fails it redirects to
+`/admin/login?next=…` (only `/admin` paths are accepted as `next`). Navigation and actions are filtered by role with
+`src/lib/admin/rbac.ts` (mirrors AGENTS.md); the API enforces the same rules.
+
+With `dev:mock`, sign in with the demo accounts in `src/mocks/db.ts` (`DEMO_USERS` + `DEMO_PASSWORD`): one per role.
+A request submitted on `/hire` appears in `/admin/requests`. The mock session lives in `sessionStorage`.
 
 ## Home intro
 
