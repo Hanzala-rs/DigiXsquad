@@ -34,7 +34,7 @@ export function Section({
   description?: string;
   children: ReactNode;
   className?: string;
-  /** `formal`: lighter, formal style used on the Government page (CLAUDE.md). */
+  /** `formal`: lighter, formal style used on the Government page (FRONTEND.md). */
   tone?: 'default' | 'surface' | 'formal';
   centered?: boolean;
 }) {

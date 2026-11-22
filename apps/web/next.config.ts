@@ -5,7 +5,7 @@ import type { NextConfig } from 'next';
 const repoRoot = path.join(process.cwd(), '../..');
 
 const nextConfig: NextConfig = {
-  // Runs in the Docker stack on the free Oracle Arm VM (see CLAUDE.md), not Vercel.
+  // Runs in the Docker stack on the free Oracle Arm VM (see FRONTEND.md), not Vercel.
   // Standalone tracing creates symlinks, which Windows blocks without Developer Mode,
   // so local Windows builds skip it; Docker/CI (Linux) always get standalone output.
   output: process.platform === 'win32' ? undefined : 'standalone',

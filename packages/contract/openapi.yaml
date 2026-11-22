@@ -3,7 +3,7 @@ info:
   title: DigixSquad API
   version: 0.1.0
   description: |
-    Contract between `apps/web` (Next.js, Claude Code) and `apps/api` (FastAPI, Codex).
+    Contract between `apps/web` (Next.js, Frontend agent) and `apps/api` (FastAPI, Codex).
 
     **Rules**
     - This file is the source of truth until the FastAPI app exists. After that, Codex exports
