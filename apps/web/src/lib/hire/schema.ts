@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 /**
  * Hire form: 7 steps, each validated with a slice of the contract's Zod schema plus the
- * business rules from the contract description (CLAUDE.md "Contract rules").
+ * business rules from the contract description (FRONTEND.md "Contract rules").
  */
 export const HIRE_STEPS = [
   { id: 'org', title: 'Organization type' },

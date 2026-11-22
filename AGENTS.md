@@ -1,6 +1,6 @@
 # AGENTS.md — Codex instructions (DigixSquad)
 
-You are **Codex**, the backend + infra agent. **Claude Code** owns the frontend. Read `docs/PLAN.md` first.
+You are **Codex**, the backend + infra agent. The **Frontend agent** owns the frontend (rules in `FRONTEND.md`). Read `docs/PLAN.md` first.
 
 ## Ownership
 
@@ -8,8 +8,8 @@ You are **Codex**, the backend + infra agent. **Claude Code** owns the frontend.
 | ------------------------------------------------------------- | ----------- | --------------------------------------- |
 | `apps/api/**`                                                 | **Codex**   | full                                    |
 | `infra/**`, `.github/workflows/**`                            | **Codex**   | full                                    |
-| `packages/contract/**`                                        | shared      | change only via PR, Claude Code reviews |
-| `apps/web/**`, `packages/api-client/**`, `packages/config/**` | Claude Code | read only, never edit                   |
+| `packages/contract/**`                                        | shared      | change only via PR, Frontend agent reviews |
+| `apps/web/**`, `packages/api-client/**`, `packages/config/**` | Frontend agent | read only, never edit                |
 
 ## Stack (fixed, don't swap without an ADR in `docs/adr/`)
 
@@ -56,4 +56,4 @@ Python 3.12+ · **uv** · **FastAPI** · Pydantic v2 · pydantic-settings · **S
 
 - Branch `codex/<feature>` → PR to `develop`. Conventional commits. One phase item per PR where possible.
 - Every PR: tests added, `ruff check`, `ruff format --check`, `mypy`, `pytest`, contract diff all green.
-- Review Claude Code's PRs when asked: check API usage matches the contract and no secrets are in client code.
+- Review the Frontend agent's PRs when asked: check API usage matches the contract and no secrets are in client code.
