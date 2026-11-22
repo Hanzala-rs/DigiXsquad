@@ -22,6 +22,5 @@ export const ActivityType = {
   STATUS_CHANGE: 'STATUS_CHANGE',
   ASSIGNMENT: 'ASSIGNMENT',
   EMAIL: 'EMAIL',
-  WHATSAPP: 'WHATSAPP',
   SYSTEM: 'SYSTEM',
 } as const;

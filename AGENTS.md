@@ -13,7 +13,9 @@ You are **Codex**, the backend + infra agent. **Claude Code** owns the frontend.
 
 ## Stack (fixed, don't swap without an ADR in `docs/adr/`)
 
-Python 3.12+ · **uv** · **FastAPI** · Pydantic v2 · pydantic-settings · **SQLAlchemy 2.0 async + asyncpg** · **Alembic** · PostgreSQL 16 · Redis + **ARQ** · PyJWT · argon2-cffi · boto3 (MinIO/R2) · aiosmtplib + Jinja2 · slowapi · pytest + pytest-asyncio + httpx + testcontainers · ruff · mypy · Sentry.
+Python 3.12+ · **uv** · **FastAPI** · Pydantic v2 · pydantic-settings · **SQLAlchemy 2.0 async + asyncpg** · **Alembic** · PostgreSQL 16 · FastAPI BackgroundTasks + APScheduler (**no Redis**) · PyJWT · argon2-cffi · boto3 (MinIO/R2) · aiosmtplib + Jinja2 · slowapi · pytest + pytest-asyncio + httpx + testcontainers · ruff · mypy · Sentry (optional, free tier).
+
+**Zero-cost rule:** no paid APIs or services. No WhatsApp API (frontend uses free `wa.me` links). Email = Brevo free SMTP (300/day). Storage/backups = Cloudflare R2 free tier (10 GB). Hosting = one Oracle Cloud Always Free Arm VM. Anything that would cost money needs the user's approval first.
 
 ## Contract rules (most important)
 
@@ -34,20 +36,21 @@ Python 3.12+ · **uv** · **FastAPI** · Pydantic v2 · pydantic-settings · **S
 - Audit every admin mutation (`audit_logs`: user, action, entity, entity_id, diff, ip).
 - Public POSTs: Turnstile verify + slowapi (`5/minute` per IP on hire-requests/contact, `10/minute` on login).
 - Uploads: presigned PUT only, private bucket, mime whitelist from contract, keys under `uploads/{yyyy}/{mm}/{uuid}-{safe_name}`.
-- Notifications go through ARQ jobs only (never send email inside the request).
+- Emails go through FastAPI `BackgroundTasks` (never block the response). Renewal reminders: APScheduler daily job inside the API, wrapped in `pg_try_advisory_lock` so it runs once.
+- Site language is **English only**. No i18n setup, no translated fields.
 - Config only from env (`.env.example` at repo root is the reference; add new keys there).
 - Errors: `{"detail": "...", "code": "..."}`; keep FastAPI's default 422 shape.
 
 ## Your phases (see PLAN.md §9)
 
-| Phase | Deliverables                                                                                                                                                                                                              | Done when                                                                                            |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 1     | `infra/docker-compose.yml` (postgres:16, redis:7, minio + bucket init, mailpit), FastAPI scaffold, models + Alembic initial migration, `seed.py`, `/health`, CI (ruff, mypy, pytest, contract diff, `pnpm contract:lint`) | `docker compose up` + `uv run alembic upgrade head` + `uv run python scripts/seed.py` work; CI green |
-| 2     | Public: `listSquads`, `getSquad`, `listRoles`, `getSiteContent`, `createContactMessage`                                                                                                                                   | contract diff passes, tests ≥ 80% on routers                                                         |
-| 3     | `presignUpload`, `createHireRequest` (+ org/contact upsert, items, attachments), `trackHireRequest`, ARQ email (client confirmation + sales alert) + optional WhatsApp                                                    | Integration test: create → row + activity + 2 queued jobs                                            |
-| 4     | Auth endpoints, RBAC, all `/admin/*` endpoints, matching score, convert to engagement, renew, CSV export, dashboard stats, audit interceptor, first SUPER_ADMIN via `scripts/create_admin.py`                             | RBAC tests for each role; 401/403 cases covered                                                      |
-| 5     | Hardening: rate limits, secure headers, CORS from env, file validation, `pg_dump` backup script, load test smoke (k6/locust optional)                                                                                     |                                                                                                      |
-| 6     | `infra/docker-compose.prod.yml`, Caddy (HTTPS), GitHub Actions deploy, Sentry, daily encrypted backups                                                                                                                    | Staging URL live                                                                                     |
+| Phase | Deliverables                                                                                                                                                                                                                | Done when                                                                                            |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 1     | `infra/docker-compose.yml` (postgres:16, minio + bucket init, mailpit — no Redis), FastAPI scaffold, models + Alembic initial migration, `seed.py`, `/health`, CI (ruff, mypy, pytest, contract diff, `pnpm contract:lint`) | `docker compose up` + `uv run alembic upgrade head` + `uv run python scripts/seed.py` work; CI green |
+| 2     | Public: `listSquads`, `getSquad`, `listRoles`, `getSiteContent`, `createContactMessage`                                                                                                                                     | contract diff passes, tests ≥ 80% on routers                                                         |
+| 3     | `presignUpload`, `createHireRequest` (+ org/contact upsert, items, attachments), `trackHireRequest`, email via BackgroundTasks (client confirmation + sales alert)                                                          | Integration test: create → row + activity + 2 emails captured in Mailpit/mock                        |
+| 4     | Auth endpoints, RBAC, all `/admin/*` endpoints, matching score, convert to engagement, renew, CSV export, dashboard stats, audit interceptor, first SUPER_ADMIN via `scripts/create_admin.py`                               | RBAC tests for each role; 401/403 cases covered                                                      |
+| 5     | Hardening: rate limits, secure headers, CORS from env, file validation, `pg_dump` backup script, load test smoke (k6/locust optional)                                                                                       |                                                                                                      |
+| 6     | `infra/docker-compose.prod.yml` (arm64) for Oracle Always Free VM, Caddy (free HTTPS), GitHub Actions deploy over SSH, Uptime Kuma, daily `pg_dump` → R2                                                                    | Staging URL live                                                                                     |
 
 ## Workflow
 
