@@ -32,15 +32,15 @@ Website ke do kaam hain: **bechna** (services, squads, Govt/Private value, trust
 
 ```
 digixsquad/
-├─ apps/web            Next.js                         [Claude Code]
+├─ apps/web            Next.js                         [Frontend agent]
 ├─ apps/api            FastAPI (uv, Python)            [Codex]
 ├─ packages/contract   openapi.yaml + seed JSON        [shared, PR + review]
-├─ packages/api-client generated TS client + Zod       [Claude Code]
-├─ packages/config     tsconfig presets                [Claude Code]
+├─ packages/api-client generated TS client + Zod       [Frontend agent]
+├─ packages/config     tsconfig presets                [Frontend agent]
 ├─ infra               docker-compose, Caddy, CI       [Codex]
 ├─ brand/logo.png
 ├─ docs/PLAN.md, docs/adr/
-├─ CLAUDE.md           Claude Code rules
+├─ FRONTEND.md         Frontend agent rules
 └─ AGENTS.md           Codex rules
 ```
 
@@ -121,16 +121,16 @@ Black `#0A0A0A` / `#141414` / `#1C1C1C`, orange `#FF6A00`, glow `#FF9A1F`, deep 
 
 ## 9. Work division
 
-| #    | Phase      | Claude Code                                                                     | Codex                                                                                     |
+| #    | Phase      | Frontend agent                                                                  | Codex                                                                                     |
 | ---- | ---------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| 0 ✅ | Foundation | Monorepo, contract, seeds, api-client generation, CLAUDE.md/AGENTS.md           | —                                                                                         |
+| 0 ✅ | Foundation | Monorepo, contract, seeds, api-client generation, FRONTEND.md/AGENTS.md         | —                                                                                         |
 | 1    | Core       | Next.js scaffold, design system, layout, **intro + hero (port prototype)**, MSW | Docker compose (no Redis), FastAPI scaffold, models, Alembic, seed.py, CI + contract diff |
 | 2    | Public     | All public pages incl. About, SEO                                               | Public endpoints                                                                          |
 | 3    | Hire flow  | 7-step form, upload, Turnstile, `/track`                                        | Presign, create request, track, emails via BackgroundTasks                                |
 | 4    | Admin      | Admin UI                                                                        | Auth, RBAC, admin endpoints, matching, audit                                              |
 | 5    | Quality    | Playwright, a11y, Lighthouse                                                    | pytest coverage, hardening, backups                                                       |
 | 6    | Deploy     | Cloudflare Web Analytics, polish                                                | Prod compose (arm64) on Oracle free VM, Caddy, CI deploy, Uptime Kuma, backups → R2       |
-| ↔    | Review     | Reviews Codex PRs                                                               | Reviews Claude PRs                                                                        |
+| ↔    | Review     | Reviews Codex PRs                                                               | Reviews Frontend agent PRs                                                                |
 
 ## 10. Verification
 

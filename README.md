@@ -3,7 +3,7 @@
 Squad-as-a-service platform: public website + hire request flow + admin panel.
 
 - Plan: [`docs/PLAN.md`](docs/PLAN.md)
-- Claude Code rules: [`CLAUDE.md`](CLAUDE.md) · Codex rules: [`AGENTS.md`](AGENTS.md)
+- Frontend agent rules: [`FRONTEND.md`](FRONTEND.md) · Codex rules: [`AGENTS.md`](AGENTS.md)
 - API contract: [`packages/contract/openapi.yaml`](packages/contract/openapi.yaml)
 
 ## Quick start (Phase 0)
@@ -18,8 +18,8 @@ pnpm test
 
 | Part                  | Tech                     | Owner       |
 | --------------------- | ------------------------ | ----------- |
-| `apps/web`            | Next.js                  | Claude Code |
+| `apps/web`            | Next.js                  | Frontend agent |
 | `apps/api`            | FastAPI (uv)             | Codex       |
 | `packages/contract`   | OpenAPI + seed JSON      | shared      |
-| `packages/api-client` | orval-generated TS + Zod | Claude Code |
+| `packages/api-client` | orval-generated TS + Zod | Frontend agent |
 | `infra`               | Docker, Caddy, CI        | Codex       |
