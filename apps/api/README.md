@@ -1,6 +1,18 @@
 # apps/api — FastAPI backend
 
-**Owner: Codex** · Phase 1 mein scaffold hoga. Poori spec `AGENTS.md` mein hai. **Zero-cost stack:** koi paid API nahi.
+Run the API and its checks from the repository root.
+
+```sh
+uv run --directory apps/api uvicorn app.main:app --reload
+uv run --directory apps/api python -m pytest
+```
+
+The health endpoint is available at `http://localhost:8000/api/v1/health`.
+To export the implemented OpenAPI schema, run
+`uv run --directory apps/api python -m scripts.export_openapi`
+from the repository root.
+
+**Owner: Codex.** See `AGENTS.md` for the backend specification and zero-cost stack.
 
 | Concern | Choice |
 |---|---|
