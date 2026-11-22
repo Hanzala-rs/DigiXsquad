@@ -31,3 +31,7 @@ __pycache__/
 # local data
 infra/data/
 *.log
+
+# next
+next-env.d.ts
+*.tsbuildinfo
