@@ -12,6 +12,25 @@ To export the implemented OpenAPI schema, run
 `uv run --directory apps/api python -m scripts.export_openapi`
 from the repository root.
 
+Database (start `infra/docker-compose.yml` first; `DATABASE_URL` from `.env` / `.env.example`):
+
+```sh
+uv run --directory apps/api alembic upgrade head          # create/upgrade schema
+uv run --directory apps/api python -m scripts.seed        # roles, squads, site content (idempotent)
+uv run --directory apps/api alembic revision --autogenerate -m "..."   # after model changes
+uv run --directory apps/api alembic check                 # fails if models drift from migrations
+```
+
+Checks (same as CI):
+
+```sh
+uv run --directory apps/api ruff check . && uv run --directory apps/api ruff format --check .
+uv run --directory apps/api mypy
+TEST_DATABASE_URL=postgresql+asyncpg://digix:digix@localhost:5432/digixsquad_test \
+  uv run --directory apps/api python -m pytest        # DB tests reset that database; skipped if unset
+uv run --directory apps/api python -m scripts.check_contract   # implemented routes vs openapi.yaml
+```
+
 **Owner: Codex.** See `AGENTS.md` for the backend specification and zero-cost stack.
 
 | Concern | Choice |
