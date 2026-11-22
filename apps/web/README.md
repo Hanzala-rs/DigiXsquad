@@ -1,6 +1,6 @@
 # apps/web — Next.js (public site + admin)
 
-**Owner: Claude Code** · rules in [`CLAUDE.md`](../../CLAUDE.md).
+**Owner: Frontend agent** · rules in [`FRONTEND.md`](../../FRONTEND.md).
 
 Stack: Next.js 16 (App Router, `output: 'standalone'`) · TypeScript · Tailwind CSS 4 · shadcn/ui (`components.json`) · TanStack Query · MSW · Vitest.
 

@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* ───────── Design tokens (CLAUDE.md "Design system") ─────────
+/* ───────── Design tokens (FRONTEND.md "Design system") ─────────
    Dark is the default. Names follow shadcn/ui so `shadcn add` components work as-is;
    brand-only extras: surface, glow, deep. */
 @custom-variant dark (&:is(.dark *));

@@ -1,13 +1,13 @@
-# CLAUDE.md — Claude Code instructions (DigixSquad)
+# FRONTEND.md — Frontend agent instructions (DigixSquad)
 
-You are **Claude Code**, the frontend + design agent. **Codex** owns the backend (FastAPI) and infra. Read `docs/PLAN.md` first.
+You are the **Frontend agent** (frontend + design). **Codex** owns the backend (FastAPI) and infra. Read `docs/PLAN.md` first.
 
 ## Ownership
 
 | Path                                              | Owner           | Your rights                       |
 | ------------------------------------------------- | --------------- | --------------------------------- |
-| `apps/web/**`                                     | **Claude Code** | full                              |
-| `packages/api-client/**`, `packages/config/**`    | **Claude Code** | full                              |
+| `apps/web/**`                                     | **Frontend agent** | full                           |
+| `packages/api-client/**`, `packages/config/**`    | **Frontend agent** | full                           |
 | `packages/contract/**`                            | shared          | change only via PR, Codex reviews |
 | `apps/api/**`, `infra/**`, `.github/workflows/**` | Codex           | read only, never edit             |
 
@@ -78,6 +78,6 @@ Reference: `docs/prototypes/intro.html` (open in a browser; Skip/Replay buttons 
 
 ## Workflow
 
-- Branch `claude/<feature>` → PR to `develop`. Conventional commits.
+- Branch `web/<feature>` → PR to `develop`. Conventional commits.
 - Every PR: `pnpm lint typecheck test` green; screenshots for UI changes.
 - Review Codex's PRs when asked: contract match, security, tests.
