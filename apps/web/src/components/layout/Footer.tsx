@@ -1,10 +1,9 @@
 import type { SiteContentCompany } from '@digixsquad/api-client';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
+import { isRealPhone, isSet, telHref } from '@/lib/placeholders';
 import { Logo } from './Logo';
 import { footerNav } from './nav-links';
-
-const isSet = (v?: string) => !!v && !/^TBD\b/i.test(v.trim());
 
 export function Footer({ company }: { company: SiteContentCompany }) {
   const year = new Date().getFullYear();
@@ -23,10 +22,10 @@ export function Footer({ company }: { company: SiteContentCompany }) {
                 </a>
               </li>
             )}
-            {isSet(company.phone) && (
+            {isRealPhone(company.phone) && (
               <li className="flex items-center gap-2">
                 <Phone className="size-4 text-primary" aria-hidden="true" />
-                <a href={`tel:${company.phone.replace(/\s/g, '')}`} className="hover:text-foreground">
+                <a href={telHref(company.phone)} className="hover:text-foreground">
                   {company.phone}
                 </a>
               </li>
