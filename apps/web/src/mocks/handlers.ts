@@ -7,11 +7,12 @@ import {
 import { http, HttpResponse } from 'msw';
 import type { z } from 'zod';
 import { roles, siteContent, squads } from '@/lib/seed-data';
-import { hireStore } from './hire-store';
+import { adminHandlers } from './admin-handlers';
+import { db } from './db';
 
 /**
- * MSW handlers for the public contract endpoints, answered from packages/contract/seed.
- * Phase 4 adds admin.
+ * MSW handlers: public endpoints answered from packages/contract/seed, plus the admin API
+ * (admin-handlers.ts). Hire requests and tracking share the in-memory store in db.ts.
  */
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000/api/v1';
 
@@ -96,7 +97,7 @@ export const handlers = [
         { status: 400 },
       );
 
-    const row = hireStore.create(b.contact.email);
+    const row = db.createRequest({ ...b, consent: true });
     return HttpResponse.json(
       { ref_no: row.ref_no, status: row.status, created_at: row.created_at },
       { status: 201 },
@@ -107,13 +108,9 @@ export const handlers = [
     const q = Object.fromEntries(new URL(request.url).searchParams);
     const parsed = TrackHireRequestQueryParams.safeParse(q);
     if (!parsed.success) return validationError(parsed.error);
-    const row = hireStore.find(parsed.data.ref, parsed.data.email);
-    if (!row) return notFound('Request not found');
-    return HttpResponse.json({
-      ref_no: row.ref_no,
-      status: row.status,
-      updated_at: row.updated_at,
-      timeline: row.timeline,
-    });
+    const row = db.track(parsed.data.ref, parsed.data.email);
+    return row ? HttpResponse.json(row) : notFound('Request not found');
   }),
+
+  ...adminHandlers,
 ];

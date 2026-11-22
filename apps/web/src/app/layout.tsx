@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Chakra_Petch, Inter } from 'next/font/google';
 import { introScript } from '@/components/home/intro-script';
-import { Footer } from '@/components/layout/Footer';
-import { Navbar } from '@/components/layout/Navbar';
-import { WhatsAppButton } from '@/components/layout/WhatsAppButton';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { getSiteContent } from '@/lib/site-content';
 import { siteUrl } from '@/lib/site-url';
@@ -32,8 +29,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = { themeColor: '#0a0a0a', colorScheme: 'dark' };
 
+/** Shared by the public site `(site)` and the admin `admin/`; each adds its own chrome. */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { company, hero } = await getSiteContent();
+  const { company } = await getSiteContent();
   return (
     <html
       lang="en"
@@ -52,15 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           Skip to content
         </a>
-        <Providers>
-          <Navbar ctaLabel={hero.primary_cta} />
-          <main id="main">{children}</main>
-          <Footer company={company} />
-          <WhatsAppButton
-            number={company.whatsapp}
-            message={`Hi ${company.name}, I'd like to discuss hiring.`}
-          />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
