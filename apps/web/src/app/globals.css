@@ -1,0 +1,644 @@
+@import 'tailwindcss';
+
+/* ───────── Design tokens (CLAUDE.md "Design system") ─────────
+   Dark is the default. Names follow shadcn/ui so `shadcn add` components work as-is;
+   brand-only extras: surface, glow, deep. */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --surface: #141414;
+  --card: #1c1c1c;
+  --card-foreground: #ffffff;
+  --popover: #141414;
+  --popover-foreground: #ffffff;
+  --primary: #ff6a00;
+  --primary-foreground: #0a0a0a;
+  --glow: #ff9a1f;
+  --deep: #e8440f;
+  --secondary: #1c1c1c;
+  --secondary-foreground: #ffffff;
+  --muted: #1c1c1c;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #ff6a00;
+  --radius: 0.375rem;
+
+  --chamfer-size: 14px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-glow: var(--glow);
+  --color-deep: var(--deep);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-chakra), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-brand: var(--ease-out);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    background: var(--background);
+    color-scheme: dark;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+}
+
+/* ───────── Motif: chamfered corners, orange edge, grid bg ───────── */
+@utility chamfer {
+  clip-path: polygon(
+    var(--chamfer-size) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer-size)),
+    calc(100% - var(--chamfer-size)) 100%,
+    0 100%,
+    0 var(--chamfer-size)
+  );
+}
+@utility chamfer-sm {
+  --chamfer-size: 8px;
+  clip-path: polygon(
+    var(--chamfer-size) 0,
+    100% 0,
+    100% calc(100% - var(--chamfer-size)),
+    calc(100% - var(--chamfer-size)) 100%,
+    0 100%,
+    0 var(--chamfer-size)
+  );
+}
+/* 1px orange chamfered edge, drawn on ::before so content stays clipped too. */
+@utility edge-glow {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--glow), var(--deep) 60%, transparent 85%);
+    clip-path: inherit;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+@utility bg-grid {
+  background-image:
+    linear-gradient(rgb(255 106 0 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 106 0 / 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 45%, #000 20%, transparent 75%);
+}
+@utility text-brand-gradient {
+  background: linear-gradient(180deg, var(--glow), var(--primary) 45%, var(--deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ───────── Home intro + hero (port of docs/prototypes/intro.html) ─────────
+   State lives on <html data-intro>: (none) | pending | burst | reveal | settled.
+   No attribute = final hero (reduced motion, already seen this session, client nav). */
+
+/* Intro overlay */
+.ds-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  place-items: center;
+  background: var(--background);
+  cursor: pointer;
+}
+html:is([data-intro='pending'], [data-intro='burst'], [data-intro='reveal']) .ds-intro {
+  display: grid;
+}
+html[data-intro='reveal'] .ds-intro {
+  animation: ds-intro-out 0.7s var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes ds-intro-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.ds-popup {
+  position: relative;
+  width: min(340px, 72vw);
+  aspect-ratio: 1 / 1.05;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #1a1a1a, #0d0d0d);
+  clip-path: polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px);
+  transform: scale(0.4) rotate(-6deg);
+  opacity: 0;
+  animation: ds-pop-in 0.75s var(--ease-out) 0.15s forwards;
+}
+.ds-popup::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--glow), var(--deep) 60%, transparent 85%);
+  clip-path: inherit;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.ds-popup-glow {
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: radial-gradient(circle, rgb(255 106 0 / 0.35), transparent 60%);
+  filter: blur(20px);
+  opacity: 0;
+  animation: ds-fade-in 0.8s ease 0.4s forwards;
+}
+@keyframes ds-pop-in {
+  60% {
+    transform: scale(1.06) rotate(1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+.ds-popup-logo {
+  width: 64%;
+  height: auto;
+  filter: drop-shadow(0 0 18px rgb(255 106 0 / 0.45));
+}
+.ds-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  top: 0;
+  background: linear-gradient(90deg, transparent, var(--glow), transparent);
+  box-shadow: 0 0 14px var(--primary);
+  opacity: 0;
+  animation: ds-scan 1.1s ease-in-out 0.6s 1 forwards;
+}
+@keyframes ds-scan {
+  0% {
+    top: 4%;
+    opacity: 1;
+  }
+  100% {
+    top: 96%;
+    opacity: 0;
+  }
+}
+.ds-boot {
+  position: absolute;
+  bottom: 9%;
+  left: 12%;
+  right: 12%;
+  font: 600 11px/1 var(--font-heading);
+  letter-spacing: 0.22em;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: ds-fade-in 0.4s ease 0.7s forwards;
+}
+.ds-bar {
+  margin-top: 10px;
+  height: 3px;
+  background: #262626;
+  overflow: hidden;
+}
+.ds-bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--deep), var(--glow));
+  animation: ds-load 1.1s var(--ease-out) 0.75s forwards;
+}
+@keyframes ds-load {
+  to {
+    width: 100%;
+  }
+}
+html:is([data-intro='burst'], [data-intro='reveal']) .ds-popup {
+  animation: ds-burst 0.55s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+@keyframes ds-burst {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+.ds-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(115deg, transparent 40%, rgb(255 154 31 / 0.55) 50%, transparent 60%);
+}
+html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
+  animation: ds-flash 0.55s ease forwards;
+}
+@keyframes ds-flash {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(60%);
+  }
+}
+
+/* Hero */
+.ds-hero {
+  position: relative;
+  height: 100svh;
+  min-height: 600px;
+  overflow: hidden;
+  display: grid;
+  /* minmax(0,1fr): the wide pre-reveal letter-spacing must not push the portrait sideways */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  padding: 80px clamp(12px, 3vw, 40px) 0;
+}
+.ds-word {
+  font: 700 clamp(2.6rem, 7.4vw, 8.5rem) / 0.85 var(--font-heading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+.ds-word-left {
+  justify-self: end;
+  margin-right: 2vw;
+  color: var(--foreground);
+}
+.ds-word-right {
+  justify-self: start;
+  margin-left: 2vw;
+  filter: drop-shadow(0 0 24px rgb(255 106 0 / 0.35));
+}
+.ds-word-right .ds-word-text {
+  background: linear-gradient(180deg, var(--glow), var(--primary) 45%, var(--deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ds-word-sub {
+  display: block;
+  margin-top: 14px;
+  font: 600 clamp(10px, 0.95vw, 14px) / 1.3 var(--font-heading);
+  letter-spacing: 0.32em;
+  color: var(--muted-foreground);
+}
+.ds-word-right .ds-word-sub {
+  text-align: right;
+}
+
+.ds-center {
+  position: relative;
+  z-index: 2;
+  height: min(82vh, 820px);
+  aspect-ratio: 642 / 1100;
+  align-self: end;
+}
+.ds-halo {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 150%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: radial-gradient(circle, rgb(255 106 0 / 0.55) 0%, rgb(232 68 15 / 0.25) 35%, transparent 65%);
+  filter: blur(10px);
+  animation: ds-pulse 4s ease-in-out infinite;
+}
+@keyframes ds-pulse {
+  50% {
+    opacity: 0.75;
+    scale: 1.04;
+  }
+}
+.ds-frame {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: 92%;
+  height: 74%;
+  translate: -50% 0;
+  clip-path: polygon(22% 0, 78% 0, 100% 22%, 100% 100%, 0 100%, 0 22%);
+  background: linear-gradient(180deg, rgb(255 154 31 / 0.9), rgb(232 68 15 / 0.15) 70%, transparent);
+}
+.ds-frame::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  clip-path: polygon(22% 0, 78% 0, 100% 22%, 100% 100%, 0 100%, 0 22%);
+  background: radial-gradient(ellipse at 50% 30%, #1f1208, var(--background) 70%);
+}
+.ds-portrait {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom;
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+}
+.ds-rim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 40% at 50% 100%, rgb(255 106 0 / 0.35), transparent 70%);
+}
+.ds-shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34vh;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgb(10 10 10 / 0.85) 55%, var(--background));
+}
+.ds-cta {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(18px, 5vh, 48px);
+  translate: -50% 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(92vw, 620px);
+  text-align: center;
+}
+
+/* Hidden "before" state while the popup is on screen */
+html:is([data-intro='pending'], [data-intro='burst']) {
+  & .ds-halo {
+    opacity: 0;
+    scale: 0.6;
+    animation: none;
+  }
+  & .ds-frame,
+  & .ds-rim,
+  & .ds-shade {
+    opacity: 0;
+  }
+  & .ds-portrait {
+    opacity: 0;
+    transform: translateY(70px) scale(0.96);
+    filter: blur(8px) brightness(0.6);
+  }
+  & .ds-word-left {
+    opacity: 0;
+    transform: translateX(-60vw);
+    letter-spacing: 0.3em;
+  }
+  & .ds-word-right {
+    opacity: 0;
+    transform: translateX(60vw);
+    letter-spacing: 0.3em;
+  }
+  & .ds-intro-nav {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  & .ds-cta,
+  & .ds-intro-late {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Reveal: same delays as the prototype */
+html[data-intro='reveal'] {
+  & .ds-halo {
+    animation: ds-halo-in 1.2s var(--ease-out) both;
+  }
+  & .ds-frame {
+    animation: ds-fade-in-from 0.9s ease 0.15s both;
+  }
+  & .ds-portrait {
+    animation: ds-rise 1.1s var(--ease-out) 0.2s both;
+  }
+  & .ds-rim {
+    animation: ds-fade-in-from 1s ease 0.7s both;
+  }
+  & .ds-word-left {
+    animation: ds-slide-l 1s var(--ease-out) 0.55s both;
+  }
+  & .ds-word-right {
+    animation: ds-slide-r 1s var(--ease-out) 0.55s both;
+  }
+  & .ds-shade {
+    animation: ds-fade-in-from 0.8s ease 1.2s both;
+  }
+  & .ds-intro-nav {
+    animation: ds-drop 0.7s var(--ease-out) 1.2s both;
+  }
+  & .ds-cta,
+  & .ds-intro-late {
+    animation: ds-up 0.7s var(--ease-out) 1.35s both;
+  }
+}
+@keyframes ds-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ds-fade-in-from {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ds-halo-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes ds-rise {
+  from {
+    opacity: 0;
+    transform: translateY(70px) scale(0.96);
+    filter: blur(8px) brightness(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes ds-slide-l {
+  from {
+    opacity: 0;
+    transform: translateX(-60vw);
+    letter-spacing: 0.3em;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    letter-spacing: 0.04em;
+  }
+}
+@keyframes ds-slide-r {
+  from {
+    opacity: 0;
+    transform: translateX(60vw);
+    letter-spacing: 0.3em;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    letter-spacing: 0.04em;
+  }
+}
+@keyframes ds-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ds-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Mobile: DIGITAL top-left, SQUAD under it right-aligned, portrait below, CTAs at the bottom */
+@media (max-width: 819px) {
+  .ds-hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    padding-top: 76px;
+    justify-items: center;
+  }
+  .ds-word {
+    font-size: clamp(2.8rem, 17vw, 6rem);
+    position: absolute;
+    z-index: 3;
+  }
+  .ds-word-sub {
+    display: none;
+  }
+  .ds-word-left {
+    top: 86px;
+    left: 6vw;
+    margin: 0;
+    justify-self: auto;
+  }
+  .ds-word-right {
+    top: calc(86px + 1.05em);
+    right: 6vw;
+    margin: 0;
+    justify-self: auto;
+  }
+  .ds-center {
+    grid-row: 2;
+    height: min(66vh, 600px);
+  }
+  .ds-shade {
+    height: 40vh;
+  }
+  .ds-cta {
+    bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+  }
+}
