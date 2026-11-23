@@ -16,10 +16,10 @@ pnpm contract:gen        # regenerate TS client + Zod
 pnpm test
 ```
 
-| Part                  | Tech                     | Owner       |
-| --------------------- | ------------------------ | ----------- |
-| `apps/web`            | Next.js                  | Frontend agent |
-| `apps/api`            | FastAPI (uv)             | Codex       |
-| `packages/contract`   | OpenAPI + seed JSON      | shared      |
-| `packages/api-client` | orval-generated TS + Zod | Frontend agent |
-| `infra`               | Docker, Caddy, CI        | Codex       |
+| Part                  | Tech                     | 
+| --------------------- | ------------------------ | 
+| `apps/web`            | Next.js                  | 
+| `apps/api`            | FastAPI (uv)             | 
+| `packages/contract`   | OpenAPI + seed JSON      | 
+| `packages/api-client` | orval-generated TS + Zod | 
+| `infra`               | Docker, Caddy, CI        | 
