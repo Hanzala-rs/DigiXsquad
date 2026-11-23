@@ -14,7 +14,7 @@ export function ProcessSteps({ steps }: { steps: SiteContent['process'] }) {
           <Card className="h-full">
             <div className="flex items-center justify-between">
               <IconBadge name={step.icon} />
-              <span className="font-heading text-3xl font-bold text-primary/30">
+              <span aria-hidden="true" className="font-heading text-3xl font-bold text-primary/30">
                 {String(i + 1).padStart(2, '0')}
               </span>
             </div>

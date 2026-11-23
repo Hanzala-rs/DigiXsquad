@@ -52,7 +52,10 @@ export default async function AboutPage() {
           <ol className="grid gap-5 md:grid-cols-2">
             {about.goals.map((goal, i) => (
               <li key={goal} className="flex gap-5">
-                <span className="font-heading text-4xl font-bold text-primary/40">
+                <span
+                  aria-hidden="true"
+                  className="font-heading text-4xl font-bold text-primary/70"
+                >
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <p className="pt-2 text-lg">{goal}</p>

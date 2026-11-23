@@ -41,13 +41,14 @@ export function RolesExplorer({
             )}
           >
             {c === 'ALL' ? 'All roles' : roleCategoryLabels[c]}{' '}
-            <span className="opacity-70">({count(c)})</span>
+            <span className="opacity-80">({count(c)})</span>
           </button>
         ))}
       </div>
       <p className="sr-only" aria-live="polite">
         Showing {visible.length} roles
       </p>
+      <h2 className="sr-only">Roles</h2>
       <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((r) => (
           <li key={r.slug}>{cards[r.slug]}</li>
