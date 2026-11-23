@@ -79,7 +79,7 @@ export function CtaBand() {
             aria-hidden="true"
           />
           <div className="relative mx-auto max-w-2xl space-y-5">
-            <h2 className="text-3xl font-bold uppercase md:text-4xl">{ctaBand.title}</h2>
+            <h2 className="text-fluid-h2 font-bold uppercase">{ctaBand.title}</h2>
             <p className="text-muted-foreground">{ctaBand.description}</p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild>
