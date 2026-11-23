@@ -12,7 +12,7 @@ export function Container({ className, children }: { className?: string; childre
 
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
-    <p className="font-heading text-xs font-semibold tracking-[0.3em] text-primary uppercase">
+    <p className="inline-flex items-center gap-3 font-heading text-xs font-semibold tracking-[0.3em] text-primary uppercase before:h-px before:w-6 before:shrink-0 before:bg-current before:content-['']">
       {children}
     </p>
   );
@@ -57,7 +57,7 @@ export function Section({
           >
             {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
             {title && (
-              <h2 id={headingId} className="text-3xl font-bold uppercase md:text-4xl">
+              <h2 id={headingId} className="text-fluid-h2 font-bold uppercase">
                 {title}
               </h2>
             )}
@@ -100,7 +100,7 @@ export function PageHeader({
       />
       <Container className="relative max-w-4xl space-y-5 text-center">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="text-4xl font-bold uppercase md:text-6xl">{title}</h1>
+        <h1 className="text-fluid-h1 font-bold uppercase">{title}</h1>
         {description && (
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">{description}</p>
         )}
@@ -115,7 +115,7 @@ export function Card({ className, children }: { className?: string; children: Re
   return (
     <div
       className={cn(
-        'chamfer edge-glow bg-card p-6 transition-shadow duration-300 hover:shadow-[0_0_28px_rgb(255_106_0/0.18)]',
+        'chamfer edge-glow bg-card p-6 transition-[transform,box-shadow] duration-300 ease-brand hover:-translate-y-1 hover:shadow-[0_0_28px_rgb(255_106_0/0.18)]',
         className,
       )}
     >

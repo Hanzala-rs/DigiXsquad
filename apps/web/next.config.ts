@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
   turbopack: { root: repoRoot },
   // api-client ships TypeScript sources.
   transpilePackages: ['@digixsquad/api-client'],
+  // 90 is used by the hero portrait so the founder photo stays crisp.
+  images: { qualities: [75, 90] },
   poweredByHeader: false,
   reactStrictMode: true,
 };
