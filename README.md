@@ -3,8 +3,6 @@
 Squad-as-a-service platform: public website + hire request flow + admin panel.
 
 - Plan: [`docs/PLAN.md`](docs/PLAN.md)
-- Frontend agent rules: [`FRONTEND.md`](FRONTEND.md) · Codex rules: [`AGENTS.md`](AGENTS.md)
-- API contract: [`packages/contract/openapi.yaml`](packages/contract/openapi.yaml)
 
 ## Quick start (Phase 0)
 
