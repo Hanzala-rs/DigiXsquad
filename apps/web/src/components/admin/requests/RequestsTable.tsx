@@ -1,21 +1,12 @@
 'use client';
 
 import type { HireRequestPage, HireRequestSummary } from '@digixsquad/api-client';
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type SortingState,
-} from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { createColumnHelper } from '@tanstack/react-table';
 import Link from 'next/link';
-import { useState } from 'react';
 import { engagementModeOptions, labelOf } from '@/content/labels';
 import { formatDate, timeAgo } from '@/lib/admin/format';
-import { cn } from '@/lib/utils';
-import { EmptyState, Pagination, Skeleton, StatusBadge } from '../ui';
+import { DataTable } from '../DataTable';
+import { StatusBadge } from '../ui';
 
 const col = createColumnHelper<HireRequestSummary>();
 
@@ -91,86 +82,14 @@ export function RequestsTable({
   loading: boolean;
   onPage: (page: number) => void;
 }) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  // TanStack Table returns non-memoizable functions; the React compiler just skips this component.
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
-    data: data?.items ?? [],
-    columns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
-
-  if (!data) return <Skeleton className="chamfer h-96" />;
-  if (data.items.length === 0)
-    return (
-      <div className="chamfer bg-card">
-        <EmptyState title="No requests match">Try another search or clear the filters.</EmptyState>
-      </div>
-    );
-
   return (
-    <div className={cn('transition-opacity', loading && 'opacity-60')}>
-      <div className="chamfer overflow-x-auto bg-card shadow-[inset_0_0_0_1px_var(--border)]">
-        <table className="w-full text-left text-sm">
-          <caption className="sr-only">
-            Hire requests (column headers sort the current page)
-          </caption>
-          <thead className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-            {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id}>
-                {hg.headers.map((h) => {
-                  const dir = h.column.getIsSorted();
-                  return (
-                    <th
-                      key={h.id}
-                      scope="col"
-                      aria-sort={
-                        dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : 'none'
-                      }
-                      className="px-4 py-3 font-medium"
-                    >
-                      <button
-                        type="button"
-                        onClick={h.column.getToggleSortingHandler()}
-                        className="inline-flex items-center gap-1 hover:text-foreground"
-                      >
-                        {flexRender(h.column.columnDef.header, h.getContext())}
-                        {dir === 'asc' ? (
-                          <ArrowUp className="size-3" aria-hidden="true" />
-                        ) : dir === 'desc' ? (
-                          <ArrowDown className="size-3" aria-hidden="true" />
-                        ) : (
-                          <ArrowUpDown className="size-3 opacity-40" aria-hidden="true" />
-                        )}
-                      </button>
-                    </th>
-                  );
-                })}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="divide-y divide-border">
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-accent/40">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 align-middle">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <Pagination
-        page={data.meta.page}
-        pageSize={data.meta.page_size}
-        total={data.meta.total}
-        onPage={onPage}
-      />
-    </div>
+    <DataTable
+      data={data}
+      columns={columns}
+      caption="Hire requests"
+      loading={loading}
+      onPage={onPage}
+      emptyTitle="No requests match"
+    />
   );
 }

@@ -10,6 +10,7 @@ import type {
   RequestStatus,
   Seniority,
   Talent,
+  TalentInput,
   UserRole,
 } from '@digixsquad/api-client';
 import { roles, squads, stableUuid } from '@/lib/seed-data';
@@ -425,7 +426,7 @@ function createEngagement(
       const talent = s.talents.find((t) => t.id === a.talent_id)!;
       talent.availability = 'ON_ENGAGEMENT';
       return {
-        id: stableUuid(`assignment:${r.id}:${i}`),
+        id: stableUuid(`assignment:${r.id}:${s.engagements.length}:${i}`),
         talent,
         role: roleBySlug.get(a.role_slug)!,
         start_date: body.start_date,
@@ -459,6 +460,14 @@ const detail = (r: StoredRequest): HireRequestDetail => {
   void _omit;
   return structuredClone(rest);
 };
+
+type PageQuery = { page: number; page_size: number };
+const paginate = <T, U>(rows: T[], q: PageQuery, map: (row: T) => U) => ({
+  items: rows.slice((q.page - 1) * q.page_size, q.page * q.page_size).map(map),
+  meta: { total: rows.length, page: q.page, page_size: q.page_size },
+});
+const clone = <T>(x: T): T => structuredClone(x);
+const today = () => isoDate(new Date());
 
 const SENIORITY_RANK: Record<Seniority, number> = { JUNIOR: 0, MID: 1, SENIOR: 2, LEAD: 3 };
 
@@ -572,14 +581,14 @@ export const db = {
   },
 
   /* ── admin: requests ── */
-  listRequests(q: {
-    page: number;
-    page_size: number;
-    q?: string;
-    status?: string;
-    org_type?: string;
-    assigned_to?: string;
-  }) {
+  listRequests(
+    q: PageQuery & {
+      q?: string;
+      status?: string;
+      org_type?: string;
+      assigned_to?: string;
+    },
+  ) {
     const needle = q.q?.trim().toLowerCase();
     const rows = state.requests.filter(
       (r) =>
@@ -591,11 +600,7 @@ export const db = {
           r.org_name.toLowerCase().includes(needle) ||
           r.contact.name.toLowerCase().includes(needle)),
     );
-    const start = (q.page - 1) * q.page_size;
-    return {
-      items: rows.slice(start, start + q.page_size).map(summary),
-      meta: { total: rows.length, page: q.page, page_size: q.page_size },
-    };
+    return paginate(rows, q, summary);
   },
   getRequest(id: string) {
     const r = state.requests.find((x) => x.id === id);
@@ -708,6 +713,122 @@ export const db = {
   attachmentUrl(id: string) {
     const found = state.requests.some((r) => r.attachments.some((a) => a.id === id));
     return found ? { url: `https://example.com/mock-download/${id}.pdf`, expires_in: 300 } : null;
+  },
+
+  /* ── admin: talents ── */
+  listTalents(q: PageQuery & { q?: string; role_slug?: string; availability?: string }) {
+    const needle = q.q?.trim().toLowerCase();
+    const rows = state.talents.filter(
+      (t) =>
+        (!q.role_slug || t.primary_role.slug === q.role_slug) &&
+        (!q.availability || t.availability === q.availability) &&
+        (!needle ||
+          [t.full_name, t.email, t.city ?? '', ...t.skills].some((v) =>
+            v.toLowerCase().includes(needle),
+          )),
+    );
+    return paginate(rows, q, clone);
+  },
+  getTalent(id: string) {
+    const t = state.talents.find((x) => x.id === id);
+    return t ? clone(t) : null;
+  },
+  /** Create (id = null) or replace a talent. */
+  saveTalent(
+    id: string | null,
+    input: TalentInput,
+  ): Talent | 'not_found' | 'bad_role' | 'conflict' {
+    const role = roleBySlug.get(input.primary_role_slug);
+    if (!role) return 'bad_role';
+    const email = input.email.toLowerCase();
+    if (state.talents.some((t) => t.id !== id && t.email.toLowerCase() === email))
+      return 'conflict';
+    const fields = {
+      full_name: input.full_name,
+      email: input.email,
+      phone: input.phone,
+      primary_role: role,
+      seniority: input.seniority,
+      skills: input.skills ?? [],
+      experience_years: input.experience_years,
+      availability: input.availability,
+      monthly_cost: input.monthly_cost ?? null,
+      city: input.city || null,
+      is_active: input.availability !== 'INACTIVE',
+    };
+    if (id === null) {
+      const t: Talent = { id: crypto.randomUUID(), cv_attachment_id: null, ...fields };
+      state.talents.unshift(t);
+      return clone(t);
+    }
+    const t = state.talents.find((x) => x.id === id);
+    if (!t) return 'not_found';
+    Object.assign(t, fields);
+    return clone(t);
+  },
+  /** Soft delete, like the API. */
+  deactivateTalent(id: string) {
+    const t = state.talents.find((x) => x.id === id);
+    if (t) Object.assign(t, { is_active: false, availability: 'INACTIVE' });
+    return !!t;
+  },
+
+  /* ── admin: engagements ── */
+  listEngagements(q: PageQuery & { status?: string; ending_within_days?: number }) {
+    const cutoff = q.ending_within_days
+      ? isoDate(new Date(Date.now() + q.ending_within_days * 86_400_000))
+      : null;
+    const rows = state.engagements
+      .filter(
+        (e) =>
+          (!q.status || e.status === q.status) &&
+          (!cutoff || (e.status === 'ACTIVE' && e.end_date <= cutoff)),
+      )
+      .sort((a, b) => a.end_date.localeCompare(b.end_date));
+    return paginate(rows, q, clone);
+  },
+  getEngagement(id: string) {
+    const e = state.engagements.find((x) => x.id === id);
+    return e ? clone(e) : null;
+  },
+  updateEngagement(
+    id: string,
+    patch: { end_date?: string; monthly_fee?: number; status?: Engagement['status'] },
+  ) {
+    const e = state.engagements.find((x) => x.id === id);
+    if (!e) return null;
+    const closing = patch.status && patch.status !== 'ACTIVE' && e.status === 'ACTIVE';
+    Object.assign(e, patch);
+    if (closing) {
+      // Ending an engagement frees its people and closes their assignments.
+      for (const a of e.assignments) {
+        a.end_date ??= today();
+        const t = state.talents.find((x) => x.id === a.talent.id);
+        if (t?.availability === 'ON_ENGAGEMENT') t.availability = 'AVAILABLE';
+      }
+    }
+    return clone(e);
+  },
+  /** New engagement from the day after the old one ends, same team; the old one is completed. */
+  renewEngagement(id: string, body: { end_date: string; monthly_fee?: number }) {
+    const e = state.engagements.find((x) => x.id === id);
+    const r = e && state.requests.find((x) => x.id === e.request_id);
+    if (!e || !r) return 'not_found' as const;
+    if (e.status !== 'ACTIVE' || body.end_date <= e.end_date) return 'conflict' as const;
+    const start = new Date(`${e.end_date}T00:00:00Z`);
+    start.setUTCDate(start.getUTCDate() + 1);
+    e.status = 'COMPLETED';
+    const next = createEngagement(state, r, {
+      start_date: isoDate(start),
+      end_date: body.end_date,
+      monthly_fee: body.monthly_fee ?? e.monthly_fee,
+      currency: e.currency,
+      assignments: e.assignments
+        .filter((a) => !a.end_date)
+        .map((a) => ({ talent_id: a.talent.id, role_slug: a.role.slug })),
+    });
+    next.renewed_from_id = e.id;
+    return clone(next);
   },
 
   /* ── admin: dashboard ── */

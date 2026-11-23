@@ -7,9 +7,13 @@ export {
   AdminGetAttachmentUrlResponse as AttachmentUrlSchema,
   AdminGetHireRequestResponse as HireRequestDetailSchema,
   AdminGetTalentMatchesResponse as MatchesSchema,
+  AdminGetTalentResponse as TalentSchema,
+  AdminListEngagementsResponse as EngagementPageSchema,
+  AdminListTalentsResponse as TalentPageSchema,
   AdminListHireRequestsResponse as HireRequestPageSchema,
   AdminListUsersResponse as UsersSchema,
   GetDashboardStatsResponse as DashboardStatsSchema,
   GetMeResponse as AuthUser,
+  ListRolesResponse as RolesSchema,
   AdminAddHireRequestNoteResponse as ActivitySchema,
 } from '@digixsquad/api-client/zod';
