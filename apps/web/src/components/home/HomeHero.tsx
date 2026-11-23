@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { homeHeroExtras as extras } from '@/content/home';
+import { HeroOrbits } from './HeroOrbits';
 
 /**
  * Hero, final state server-rendered (good LCP). The reveal animation is driven by
@@ -13,6 +14,7 @@ export function HomeHero({ content }: { content: SiteContent }) {
   return (
     <section className="ds-hero" aria-labelledby="hero-title">
       <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+      <HeroOrbits />
 
       <h1 id="hero-title" className="ds-word ds-word-left">
         <span aria-hidden="true">{extras.wordLeft}</span>
@@ -31,9 +33,10 @@ export function HomeHero({ content }: { content: SiteContent }) {
           className="ds-portrait"
           src="/brand/founder.webp"
           alt={extras.founderAlt}
-          width={642}
-          height={1100}
-          sizes="(max-width: 819px) 66vh, 48vh"
+          width={1024}
+          height={1536}
+          sizes="(max-width: 819px) min(44vh, 400px), min(55vh, 547px)"
+          quality={90}
           priority
         />
         <div className="ds-rim" />

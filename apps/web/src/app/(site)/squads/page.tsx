@@ -18,6 +18,7 @@ export default async function SquadsPage() {
     <>
       <PageHeader eyebrow={intro.eyebrow} title={intro.title} description={intro.description} />
       <Container>
+        <h2 className="sr-only">All squads</h2>
         <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {squads.map((squad) => (
             <li key={squad.slug}>

@@ -1,4 +1,5 @@
 export const mainNav = [
+  { href: '/', label: 'Home' },
   { href: '/squads', label: 'Squads' },
   { href: '/roles', label: 'Roles' },
   { href: '/government', label: 'Government' },
@@ -35,3 +36,7 @@ export const footerNav = [
     ],
   },
 ] as const;
+
+/** `/` matches only itself; other links also match their sub-pages (e.g. /squads/x). */
+export const isActivePath = (pathname: string, href: string) =>
+  pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));

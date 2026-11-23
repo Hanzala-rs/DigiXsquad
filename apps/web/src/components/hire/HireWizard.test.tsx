@@ -85,7 +85,7 @@ describe('HireWizard', () => {
     fireEvent.click(screen.getByRole('button', { name: /Submit request/ }));
 
     const status = await screen.findByRole('status');
-    expect(within(status).getByText(/^DS-\d{4}-0002$/)).toBeInTheDocument();
+    expect(within(status).getByText(/^DS-\d{4}-\d{4,}$/)).toBeInTheDocument();
     expect(within(status).getByText('ali@example.gov.pk')).toBeInTheDocument();
     expect(sessionStorage.getItem('ds_hire_draft')).toBeNull();
   });

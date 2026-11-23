@@ -26,7 +26,10 @@ export default function TrackPage() {
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Lost your reference number?{' '}
-          <Link href="/contact" className="text-primary hover:underline">
+          <Link
+            href="/contact"
+            className="text-primary underline underline-offset-4 hover:text-glow"
+          >
             Contact us
           </Link>
           .

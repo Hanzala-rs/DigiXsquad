@@ -14,7 +14,7 @@ export function ProcessSteps({ steps }: { steps: SiteContent['process'] }) {
           <Card className="h-full">
             <div className="flex items-center justify-between">
               <IconBadge name={step.icon} />
-              <span className="font-heading text-3xl font-bold text-primary/30">
+              <span aria-hidden="true" className="font-heading text-3xl font-bold text-primary/30">
                 {String(i + 1).padStart(2, '0')}
               </span>
             </div>
@@ -79,7 +79,7 @@ export function CtaBand() {
             aria-hidden="true"
           />
           <div className="relative mx-auto max-w-2xl space-y-5">
-            <h2 className="text-3xl font-bold uppercase md:text-4xl">{ctaBand.title}</h2>
+            <h2 className="text-fluid-h2 font-bold uppercase">{ctaBand.title}</h2>
             <p className="text-muted-foreground">{ctaBand.description}</p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild>
