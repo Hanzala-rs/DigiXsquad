@@ -383,7 +383,21 @@ function seedState(): State {
   return state;
 }
 
-let state = seedState();
+/** In the browser (`dev:mock`, E2E) the db is mirrored to sessionStorage so full page loads keep data. */
+const STORE_KEY = 'ds_mock_db';
+const storage = () => (typeof sessionStorage === 'undefined' ? null : sessionStorage);
+
+function load(): State {
+  try {
+    const saved = storage()?.getItem(STORE_KEY);
+    if (saved) return JSON.parse(saved) as State;
+  } catch {
+    /* corrupt or blocked storage: fall back to the seed */
+  }
+  return seedState();
+}
+
+let state = load();
 
 function createEngagement(
   s: State,
@@ -451,6 +465,18 @@ const SENIORITY_RANK: Record<Seniority, number> = { JUNIOR: 0, MID: 1, SENIOR: 2
 export const db = {
   reset() {
     state = seedState();
+    try {
+      storage()?.removeItem(STORE_KEY);
+    } catch {
+      /* ignore */
+    }
+  },
+  save() {
+    try {
+      storage()?.setItem(STORE_KEY, JSON.stringify(state));
+    } catch {
+      /* ignore (quota / blocked storage) */
+    }
   },
 
   /* ── auth ── */

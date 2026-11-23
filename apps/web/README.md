@@ -10,7 +10,10 @@ API types and Zod schemas come from `@digixsquad/api-client`. Never hand-write A
 pnpm --filter @digixsquad/web dev        # http://localhost:3000, real API at NEXT_PUBLIC_API_BASE_URL
 pnpm --filter @digixsquad/web dev:mock   # browser requests answered by MSW from packages/contract/seed
 pnpm --filter @digixsquad/web test
+pnpm --filter @digixsquad/web e2e        # Playwright: hire → admin → status → track + axe a11y (starts its own mock server on :3100)
 ```
+
+Lighthouse: measure a production build (`APP_ENV=production pnpm build && pnpm start`), not `dev`. Non-production builds are `noindex`, so SEO scores low there on purpose.
 
 | Path | What |
 | --- | --- |
@@ -21,7 +24,8 @@ pnpm --filter @digixsquad/web test
 | `src/app/(site)/` | Public pages + their layout (navbar, footer, WhatsApp button) |
 | `src/app/admin/` | Admin: `login/` (public) and `(panel)/` (session-guarded shell) |
 | `src/lib/admin/` | `authed()` session refresh, typed admin API, RBAC matrix, formatting |
-| `src/mocks/` | MSW handlers; `db.ts` is the in-memory backend shared by public + admin mocks |
+| `src/mocks/` | MSW handlers; `db.ts` is the mock backend shared by public + admin mocks (mirrored to sessionStorage in the browser) |
+| `e2e/` | Playwright specs (`playwright.config.ts`; locally uses the installed Chrome) |
 
 ## Admin
 
