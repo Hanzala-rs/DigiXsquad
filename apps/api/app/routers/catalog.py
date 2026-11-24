@@ -1,18 +1,70 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from pydantic.json_schema import SkipJsonSchema
+from sqlalchemy import Select, select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import selectinload
 
 from app.core.auth import require_role
 from app.core.db import DatabaseSession
 from app.models.auth import User
-from app.models.enums import UserRole
+from app.models.catalog import ServiceRole, Squad, SquadRole
+from app.models.enums import RoleCategory, UserRole
 from app.models.system import AuditLog, SiteSetting
+from app.schemas import catalog as schema
 from app.schemas.catalog import Error, SiteContent
 
 router = APIRouter(prefix="/api/v1")
 SITE_CONTENT_KEY = "site_content"
+
+
+def active_squads() -> Select[tuple[Squad]]:
+    return (
+        select(Squad)
+        .where(Squad.is_active)
+        .options(selectinload(Squad.roles.and_(SquadRole.role.has(ServiceRole.is_active))))
+    )
+
+
+@router.get(
+    "/squads",
+    operation_id="listSquads",
+    tags=["public"],
+    response_description="Active squads with their default roles",
+)
+async def list_squads(session: DatabaseSession) -> list[schema.Squad]:
+    squads = await session.scalars(active_squads().order_by(Squad.sort_order, Squad.slug))
+    return [schema.Squad.model_validate(squad) for squad in squads]
+
+
+@router.get(
+    "/squads/{slug}",
+    operation_id="getSquad",
+    tags=["public"],
+    response_description="Squad",
+    responses={404: {"model": Error, "description": "Not found"}},
+)
+async def get_squad(
+    slug: Annotated[str, Path(pattern=r"^[a-z0-9-]+$")], session: DatabaseSession
+) -> schema.Squad:
+    squad = await session.scalar(active_squads().where(Squad.slug == slug))
+    if squad is None:
+        raise HTTPException(404, detail={"detail": "Squad not found", "code": "NOT_FOUND"})
+    return schema.Squad.model_validate(squad)
+
+
+@router.get(
+    "/roles", operation_id="listRoles", tags=["public"], response_description="Active service roles"
+)
+async def list_roles(
+    session: DatabaseSession, category: RoleCategory | SkipJsonSchema[None] = None
+) -> list[schema.ServiceRole]:
+    query = select(ServiceRole).where(ServiceRole.is_active)
+    if category is not None:
+        query = query.where(ServiceRole.category == category)
+    roles = await session.scalars(query.order_by(ServiceRole.title, ServiceRole.slug))
+    return [schema.ServiceRole.model_validate(role) for role in roles]
 
 
 @router.get(

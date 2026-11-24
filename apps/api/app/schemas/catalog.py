@@ -1,5 +1,43 @@
-from pydantic import AnyUrl, BaseModel, Field
+from uuid import UUID
+
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field
 from pydantic.json_schema import SkipJsonSchema
+
+from app.models.enums import RoleCategory
+
+
+class ServiceRole(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    slug: str
+    title: str
+    category: RoleCategory
+    description: str
+    skills: list[str]
+    is_active: bool
+
+
+class SquadRole(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    role: ServiceRole
+    default_qty: int = Field(ge=1)
+
+
+class Squad(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    slug: str
+    name: str
+    tagline: str
+    description: str
+    icon: str
+    sort_order: int
+    is_active: bool
+    use_cases: list[str]
+    roles: list[SquadRole]
 
 
 class Error(BaseModel):
