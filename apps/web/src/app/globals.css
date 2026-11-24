@@ -74,8 +74,9 @@
     background: var(--background);
     color-scheme: dark;
   }
+  /* No body background: <html> paints the page colour, so fixed decorative layers with a
+     negative z-index (home swirl) can sit between the page colour and the content. */
   body {
-    background: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -339,8 +340,8 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   padding: 80px clamp(12px, 3vw, 40px) 0;
 }
 .ds-word {
-  font: 700 clamp(2.6rem, 7.4vw, 8.5rem) / 0.85 var(--font-heading);
-  letter-spacing: 0.04em;
+  font: 700 clamp(2.8rem, 8.1vw, 9.5rem) / 0.85 var(--font-heading);
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
   position: relative;
@@ -351,7 +352,7 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
 }
 .ds-word-left {
   justify-self: end;
-  margin-right: 2vw;
+  margin-right: 0.6vw;
   color: var(--foreground);
   translate: calc(var(--hero-exit) * -30vw) 0;
 }
@@ -373,7 +374,7 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
 }
 .ds-word-right {
   justify-self: start;
-  margin-left: 2vw;
+  margin-left: 0.6vw;
   filter: drop-shadow(0 0 24px rgb(255 106 0 / 0.35));
   translate: calc(var(--hero-exit) * 30vw) 0;
 }
@@ -486,8 +487,9 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   width: 100%;
   height: 100%;
 }
+/* Softer than full strength: bright orange dots on black read as harsh (client feedback). */
 .ds-particles[data-live] {
-  opacity: 1;
+  opacity: 0.72;
 }
 .ds-center:has(.ds-particles[data-live]) {
   & .ds-portrait-base {
@@ -714,7 +716,7 @@ html[data-intro='reveal'] {
     justify-items: center;
   }
   .ds-word {
-    font-size: clamp(2.8rem, 17vw, 6rem);
+    font-size: clamp(3.1rem, 19vw, 6.75rem);
     position: absolute;
     z-index: 3;
   }

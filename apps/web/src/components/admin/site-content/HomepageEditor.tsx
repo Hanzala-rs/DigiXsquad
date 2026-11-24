@@ -164,7 +164,7 @@ function HomepageForm({ content }: { content: SiteContent }) {
                 name={`team.${i}.photo_url`}
                 label="Photo URL"
                 optional
-                hint="A site path such as /brand/founder-cutout.webp, or a full https:// URL."
+                hint="A site path such as /brand/founder-portrait.webp, or a full https:// URL."
               />
             </div>
             <div className="md:col-span-2">

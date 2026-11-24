@@ -189,9 +189,9 @@
     }
   ],
   "founder": {
-    "name": "Founder Name",
+    "name": "G Murtaza Azeem",
     "title": "Founder & CEO",
-    "portrait_alt": "Portrait of the founder and CEO of DigixSquad"
+    "portrait_alt": "G Murtaza Azeem, Founder & CEO of DigixSquad"
   },
   "what_we_do": [
     {
@@ -217,10 +217,10 @@
   ],
   "team": [
     {
-      "name": "Founder Name",
+      "name": "G Murtaza Azeem",
       "title": "Founder & CEO",
       "bio": "Leads DigixSquad strategy and client partnerships across government and business.",
-      "photo_url": "/brand/founder-cutout.webp"
+      "photo_url": "/brand/founder-portrait.webp"
     },
     {
       "name": "Director Name",

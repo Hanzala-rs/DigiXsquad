@@ -3,6 +3,7 @@ import { HomeHero } from '@/components/home/HomeHero';
 import { IntroSplash } from '@/components/home/IntroSplash';
 import { ProjectsSection } from '@/components/home/ProjectsSection';
 import { SquadsSection } from '@/components/home/SquadsSection';
+import { SwirlBackground } from '@/components/home/SwirlBackground';
 import { TeamSection } from '@/components/home/TeamSection';
 import { VisionMission } from '@/components/home/VisionMission';
 import { ScrollProgress } from '@/components/motion/ScrollProgress';
@@ -19,6 +20,7 @@ export default async function HomePage() {
   const [content, squads] = await Promise.all([getSiteContent(), getSquads()]);
   return (
     <>
+      <SwirlBackground />
       <ScrollProgress />
       <IntroSplash loadingLabel={homeHeroExtras.introLoading} />
       <HomeHero content={content} />

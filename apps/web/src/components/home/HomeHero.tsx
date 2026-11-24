@@ -38,16 +38,16 @@ export function HomeHero({ content }: { content: SiteContent }) {
         <div className="ds-portrait-base">
           <Image
             className="ds-portrait"
-            src="/brand/founder-cutout.webp"
+            src="/brand/founder-portrait.webp"
             alt={alt}
-            width={765}
+            width={613}
             height={1100}
             sizes="(max-width: 819px) min(44vh, 400px), min(55vh, 547px)"
             quality={90}
             priority
           />
         </div>
-        <ParticlePortrait src="/brand/founder-particles.png" />
+        <ParticlePortrait src="/brand/founder-portrait-particles.png" />
         <div className="ds-rim" />
       </div>
 

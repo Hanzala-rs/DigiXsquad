@@ -200,7 +200,7 @@ export function createField(
       field.buckets.push({
         start: i,
         end: i,
-        color: mix(base, PALETTE.light, Math.pow(l, 2) * 0.85),
+        color: mix(base, PALETTE.light, Math.pow(l, 2) * 0.55),
         alpha: brightness(l),
       });
       current = bucket;
