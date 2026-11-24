@@ -96,10 +96,22 @@
     }
   ],
   "stats": [
-    { "label": "Professionals on bench", "value": "TBD" },
-    { "label": "Squads deployed", "value": "TBD" },
-    { "label": "Average time to deploy", "value": "TBD" },
-    { "label": "Client retention", "value": "TBD" }
+    {
+      "label": "Professionals on bench",
+      "value": "TBD"
+    },
+    {
+      "label": "Squads deployed",
+      "value": "TBD"
+    },
+    {
+      "label": "Average time to deploy",
+      "value": "TBD"
+    },
+    {
+      "label": "Client retention",
+      "value": "TBD"
+    }
   ],
   "process": [
     {
@@ -175,5 +187,61 @@
       "question": "What if a resource isn't the right fit?",
       "answer": "Tell us and we'll replace them at no extra cost."
     }
-  ]
+  ],
+  "founder": {
+    "name": "Founder Name",
+    "title": "Founder & CEO",
+    "portrait_alt": "Portrait of the founder and CEO of DigixSquad"
+  },
+  "what_we_do": [
+    {
+      "title": "Squads on demand",
+      "description": "Complete teams of developers, designers, analysts and testers on one monthly contract.",
+      "icon": "users"
+    },
+    {
+      "title": "Single-role hiring",
+      "description": "One skilled professional for as little as one month, deployed in 7 to 14 days.",
+      "icon": "user-check"
+    },
+    {
+      "title": "Government digitization",
+      "description": "E-governance portals, dashboards and records digitization under PPRA rules.",
+      "icon": "landmark"
+    },
+    {
+      "title": "Automation, data and AI",
+      "description": "ERP, reporting, process automation and AI tools for growing businesses.",
+      "icon": "cpu"
+    }
+  ],
+  "team": [
+    {
+      "name": "Founder Name",
+      "title": "Founder & CEO",
+      "bio": "Leads DigixSquad strategy and client partnerships across government and business.",
+      "photo_url": "/brand/founder-cutout.webp"
+    },
+    {
+      "name": "Director Name",
+      "title": "Director",
+      "bio": "Runs delivery and keeps every squad on time, on scope and on standard."
+    }
+  ],
+  "projects": [
+    {
+      "label": "Projects delivered",
+      "value": 0,
+      "suffix": "+"
+    },
+    {
+      "label": "In progress",
+      "value": 0
+    },
+    {
+      "label": "Open requests",
+      "value": 0
+    }
+  ],
+  "sponsors": []
 }

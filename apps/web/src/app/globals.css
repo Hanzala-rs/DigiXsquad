@@ -706,6 +706,19 @@ body {
   overflow-x: clip;
 }
 
+/* ───────── Home one-pager: smooth anchor scrolling that clears the fixed navbar ───────── */
+html {
+  scroll-behavior: smooth;
+}
+:where(section, footer)[id] {
+  scroll-margin-top: 4.5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* ───────── Hero orbits: rotating dot rings behind DIGITAL · portrait · SQUAD ───────── */
 .ds-orbits {
   position: absolute;
