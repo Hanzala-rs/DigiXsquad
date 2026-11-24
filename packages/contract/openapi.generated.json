@@ -5,6 +5,84 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/v1/site-content": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Site Content",
+        "operationId": "getSiteContent",
+        "responses": {
+          "200": {
+            "description": "Site content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteContent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/site-content": {
+      "put": {
+        "tags": [
+          "admin-catalog"
+        ],
+        "summary": "Update Site Content",
+        "description": "SUPER_ADMIN only.",
+        "operationId": "adminUpdateSiteContent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteContent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteContent"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -29,6 +107,162 @@
   },
   "components": {
     "schemas": {
+      "About": {
+        "properties": {
+          "story": {
+            "type": "string",
+            "title": "Story"
+          },
+          "mission": {
+            "type": "string",
+            "title": "Mission"
+          },
+          "vision": {
+            "type": "string",
+            "title": "Vision"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Values"
+          },
+          "goals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Goals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "story",
+          "mission",
+          "vision",
+          "values"
+        ],
+        "title": "About"
+      },
+      "Company": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "tagline": {
+            "type": "string",
+            "title": "Tagline"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "whatsapp": {
+            "type": "string",
+            "title": "Whatsapp"
+          },
+          "ntn": {
+            "type": "string",
+            "title": "Ntn"
+          },
+          "socials": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Socials"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "tagline",
+          "email",
+          "phone",
+          "address"
+        ],
+        "title": "Company"
+      },
+      "Error": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "Error"
+      },
+      "FAQ": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "title": "FAQ"
+      },
+      "Founder": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "portrait_alt": {
+            "type": "string",
+            "title": "Portrait Alt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "title"
+        ],
+        "title": "Founder"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -45,6 +279,284 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "Hero": {
+        "properties": {
+          "headline": {
+            "type": "string",
+            "title": "Headline"
+          },
+          "subheadline": {
+            "type": "string",
+            "title": "Subheadline"
+          },
+          "primary_cta": {
+            "type": "string",
+            "title": "Primary Cta"
+          },
+          "secondary_cta": {
+            "type": "string",
+            "title": "Secondary Cta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "headline",
+          "subheadline",
+          "primary_cta",
+          "secondary_cta"
+        ],
+        "title": "Hero"
+      },
+      "ProjectCounter": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Value"
+          },
+          "suffix": {
+            "type": "string",
+            "title": "Suffix"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value"
+        ],
+        "title": "ProjectCounter"
+      },
+      "SiteContent": {
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/Company"
+          },
+          "hero": {
+            "$ref": "#/components/schemas/Hero"
+          },
+          "about": {
+            "$ref": "#/components/schemas/About"
+          },
+          "why_us": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Why Us"
+          },
+          "stats": {
+            "items": {
+              "$ref": "#/components/schemas/Stat"
+            },
+            "type": "array",
+            "title": "Stats"
+          },
+          "process": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Process"
+          },
+          "faqs": {
+            "items": {
+              "$ref": "#/components/schemas/FAQ"
+            },
+            "type": "array",
+            "title": "Faqs"
+          },
+          "compliance": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Compliance"
+          },
+          "founder": {
+            "$ref": "#/components/schemas/Founder"
+          },
+          "what_we_do": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "What We Do"
+          },
+          "team": {
+            "items": {
+              "$ref": "#/components/schemas/TeamMember"
+            },
+            "type": "array",
+            "title": "Team"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectCounter"
+            },
+            "type": "array",
+            "title": "Projects"
+          },
+          "sponsors": {
+            "items": {
+              "$ref": "#/components/schemas/Sponsor"
+            },
+            "type": "array",
+            "title": "Sponsors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company",
+          "hero",
+          "about",
+          "why_us",
+          "stats",
+          "process",
+          "faqs",
+          "compliance"
+        ],
+        "title": "SiteContent"
+      },
+      "Sponsor": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "logo_url": {
+            "type": "string",
+            "title": "Logo Url"
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Sponsor"
+      },
+      "Stat": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value"
+        ],
+        "title": "Stat"
+      },
+      "TeamMember": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "bio": {
+            "type": "string",
+            "title": "Bio"
+          },
+          "photo_url": {
+            "type": "string",
+            "title": "Photo Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "title"
+        ],
+        "title": "TeamMember"
+      },
+      "TitledItem": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "icon": {
+            "type": "string",
+            "title": "Icon"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description"
+        ],
+        "title": "TitledItem"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ds_access"
       }
     }
   }
