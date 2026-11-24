@@ -5,6 +5,309 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/v1/squads": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "List Squads",
+        "operationId": "listSquads",
+        "responses": {
+          "200": {
+            "description": "Active squads with their default roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Squad"
+                  },
+                  "type": "array",
+                  "title": "Response Listsquads"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/squads/{slug}": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Squad",
+        "operationId": "getSquad",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+$",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Squad",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Squad"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "List Roles",
+        "operationId": "listRoles",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/RoleCategory"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active service roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServiceRole"
+                  },
+                  "title": "Response Listroles"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/site-content": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Get Site Content",
+        "operationId": "getSiteContent",
+        "responses": {
+          "200": {
+            "description": "Site content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteContent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/site-content": {
+      "put": {
+        "tags": [
+          "admin-catalog"
+        ],
+        "summary": "Update Site Content",
+        "description": "SUPER_ADMIN only.",
+        "operationId": "adminUpdateSiteContent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteContent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteContent"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/contact": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Create Contact Message",
+        "operationId": "createContactMessage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactMessageCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/presign": {
+      "post": {
+        "tags": [
+          "public"
+        ],
+        "summary": "Presign Upload",
+        "operationId": "presignUpload",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Presigned URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -29,6 +332,207 @@
   },
   "components": {
     "schemas": {
+      "About": {
+        "properties": {
+          "story": {
+            "type": "string",
+            "title": "Story"
+          },
+          "mission": {
+            "type": "string",
+            "title": "Mission"
+          },
+          "vision": {
+            "type": "string",
+            "title": "Vision"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Values"
+          },
+          "goals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Goals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "story",
+          "mission",
+          "vision",
+          "values"
+        ],
+        "title": "About"
+      },
+      "Company": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "tagline": {
+            "type": "string",
+            "title": "Tagline"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "whatsapp": {
+            "type": "string",
+            "title": "Whatsapp"
+          },
+          "ntn": {
+            "type": "string",
+            "title": "Ntn"
+          },
+          "socials": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Socials"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "tagline",
+          "email",
+          "phone",
+          "address"
+        ],
+        "title": "Company"
+      },
+      "ContactMessageCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Phone"
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Subject"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 10,
+            "title": "Message"
+          },
+          "turnstile_token": {
+            "type": "string",
+            "title": "Turnstile Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "subject",
+          "message",
+          "turnstile_token"
+        ],
+        "title": "ContactMessageCreate"
+      },
+      "Error": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "Error"
+      },
+      "FAQ": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "title": "FAQ"
+      },
+      "Founder": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "portrait_alt": {
+            "type": "string",
+            "title": "Portrait Alt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "title"
+        ],
+        "title": "Founder"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -45,6 +549,496 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "Hero": {
+        "properties": {
+          "headline": {
+            "type": "string",
+            "title": "Headline"
+          },
+          "subheadline": {
+            "type": "string",
+            "title": "Subheadline"
+          },
+          "primary_cta": {
+            "type": "string",
+            "title": "Primary Cta"
+          },
+          "secondary_cta": {
+            "type": "string",
+            "title": "Secondary Cta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "headline",
+          "subheadline",
+          "primary_cta",
+          "secondary_cta"
+        ],
+        "title": "Hero"
+      },
+      "Ok": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "Ok"
+      },
+      "PresignRequest": {
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "File Name"
+          },
+          "mime_type": {
+            "$ref": "#/components/schemas/UploadMimeType"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "maximum": 10485760.0,
+            "minimum": 1.0,
+            "title": "Size Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_name",
+          "mime_type",
+          "size_bytes"
+        ],
+        "title": "PresignRequest"
+      },
+      "PresignResponse": {
+        "properties": {
+          "upload_url": {
+            "type": "string",
+            "format": "uri",
+            "title": "Upload Url"
+          },
+          "file_key": {
+            "type": "string",
+            "title": "File Key"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_url",
+          "file_key",
+          "expires_in"
+        ],
+        "title": "PresignResponse"
+      },
+      "ProjectCounter": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Value"
+          },
+          "suffix": {
+            "type": "string",
+            "title": "Suffix"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value"
+        ],
+        "title": "ProjectCounter"
+      },
+      "RoleCategory": {
+        "type": "string",
+        "enum": [
+          "DEVELOPMENT",
+          "DIGITAL_MEDIA",
+          "DATA_AI",
+          "IT_SUPPORT",
+          "DIGITAL_MARKETING",
+          "MANAGEMENT"
+        ],
+        "title": "RoleCategory"
+      },
+      "ServiceRole": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "category": {
+            "$ref": "#/components/schemas/RoleCategory"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "category",
+          "description",
+          "skills",
+          "is_active"
+        ],
+        "title": "ServiceRole"
+      },
+      "SiteContent": {
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/Company"
+          },
+          "hero": {
+            "$ref": "#/components/schemas/Hero"
+          },
+          "about": {
+            "$ref": "#/components/schemas/About"
+          },
+          "why_us": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Why Us"
+          },
+          "stats": {
+            "items": {
+              "$ref": "#/components/schemas/Stat"
+            },
+            "type": "array",
+            "title": "Stats"
+          },
+          "process": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Process"
+          },
+          "faqs": {
+            "items": {
+              "$ref": "#/components/schemas/FAQ"
+            },
+            "type": "array",
+            "title": "Faqs"
+          },
+          "compliance": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "Compliance"
+          },
+          "founder": {
+            "$ref": "#/components/schemas/Founder"
+          },
+          "what_we_do": {
+            "items": {
+              "$ref": "#/components/schemas/TitledItem"
+            },
+            "type": "array",
+            "title": "What We Do"
+          },
+          "team": {
+            "items": {
+              "$ref": "#/components/schemas/TeamMember"
+            },
+            "type": "array",
+            "title": "Team"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectCounter"
+            },
+            "type": "array",
+            "title": "Projects"
+          },
+          "sponsors": {
+            "items": {
+              "$ref": "#/components/schemas/Sponsor"
+            },
+            "type": "array",
+            "title": "Sponsors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company",
+          "hero",
+          "about",
+          "why_us",
+          "stats",
+          "process",
+          "faqs",
+          "compliance"
+        ],
+        "title": "SiteContent"
+      },
+      "Sponsor": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "logo_url": {
+            "type": "string",
+            "title": "Logo Url"
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Sponsor"
+      },
+      "Squad": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "tagline": {
+            "type": "string",
+            "title": "Tagline"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "icon": {
+            "type": "string",
+            "title": "Icon"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "use_cases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Use Cases"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/SquadRole"
+            },
+            "type": "array",
+            "title": "Roles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "tagline",
+          "description",
+          "icon",
+          "sort_order",
+          "is_active",
+          "use_cases",
+          "roles"
+        ],
+        "title": "Squad"
+      },
+      "SquadRole": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/ServiceRole"
+          },
+          "default_qty": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Default Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "default_qty"
+        ],
+        "title": "SquadRole"
+      },
+      "Stat": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "value"
+        ],
+        "title": "Stat"
+      },
+      "TeamMember": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "bio": {
+            "type": "string",
+            "title": "Bio"
+          },
+          "photo_url": {
+            "type": "string",
+            "title": "Photo Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "title"
+        ],
+        "title": "TeamMember"
+      },
+      "TitledItem": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "icon": {
+            "type": "string",
+            "title": "Icon"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description"
+        ],
+        "title": "TitledItem"
+      },
+      "UploadMimeType": {
+        "type": "string",
+        "enum": [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ],
+        "title": "UploadMimeType"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ds_access"
       }
     }
   }

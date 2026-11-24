@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     database_url: str = "postgresql+asyncpg://digix:digix@localhost:5432/digixsquad"
     cors_origins: str = "http://localhost:3000"
+    jwt_secret: str = ""
 
     @property
     def cors_origin_list(self) -> list[str]:
