@@ -61,7 +61,7 @@ export function SwirlBackground() {
       for (const v of vortices) {
         const g = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, 16);
         // Drawn every frame on top of the slow fade, so it builds up: keep it faint.
-        g.addColorStop(0, `rgba(${GLOW}, 0.05)`);
+        g.addColorStop(0, `rgba(${GLOW}, 0.012)`);
         g.addColorStop(1, `rgba(${GLOW}, 0)`);
         ctx.fillStyle = g;
         ctx.fillRect(v.x - 16, v.y - 16, 32, 32);

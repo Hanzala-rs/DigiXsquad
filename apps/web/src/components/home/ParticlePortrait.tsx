@@ -5,18 +5,28 @@ import { HeroExitContext } from './HeroStage';
 import {
   countOpaque,
   createField,
+  emberAlpha,
+  interiorAlpha,
   layoutField,
   sampleParticles,
   scatterField,
+  spawnEmber,
+  stepEmber,
   stepForCount,
   stepParticles,
   type Box,
+  type Ember,
   type ParticleField,
 } from './particles';
 
 /** Target particle counts (desktop / phone < 820px). */
 const COUNT_DESKTOP = 7800;
 const COUNT_MOBILE = 3600;
+/** Rising sparks around the figure. */
+const EMBERS_DESKTOP = 70;
+const EMBERS_MOBILE = 32;
+/** Seconds after the intro starts when the dots dissolve into the real photo. */
+const FORM_AT = 1.5;
 const MOBILE_MAX = 819;
 /** Pointer hole radius at a ~740px-tall figure; scaled with the figure. */
 const HOLE_RADIUS = 90;
@@ -24,12 +34,14 @@ const HOLE_RADIUS = 90;
 const FIGURE_TOP = 0.1;
 
 /**
- * The founder drawn as thousands of orange dots on a 2D canvas. Dots spring back to their home
- * pixel; the pointer pushes a hole through them; scrolling the hero away scatters them.
+ * The founder assembled from thousands of orange dots on a 2D canvas, which then dissolve into
+ * the real photo, leaving a glowing particle outline around the silhouette and sparks rising
+ * from below. The pointer pushes the outline and sparks away; scrolling the hero away turns the
+ * photo back into dots and scatters them.
  *
  * Progressive enhancement over the server-rendered <Image> underneath: until the first frame is
- * drawn (or if anything fails, or under reduced motion) the wrapper stays transparent and the
- * static photo shows. CSS (`.ds-center:has(.ds-particles[data-live])`) fades the photo out.
+ * drawn (or if anything fails, or under reduced motion) the static photo simply shows.
+ * CSS: `[data-live]` hides the photo while the dots assemble, `[data-formed]` brings it back.
  */
 export function ParticlePortrait({ src }: { src: string }) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -64,6 +76,9 @@ export function ParticlePortrait({ src }: { src: string }) {
     let introAt = -1;
     let inView = true;
     let live = false;
+    let formed = false;
+    let embers: Ember[] = [];
+    let interior = 1;
     const pointer = { cx: 0, cy: 0, active: false, strength: 0 };
 
     const introReady = () => {
@@ -76,7 +91,7 @@ export function ParticlePortrait({ src }: { src: string }) {
       mobile = window.innerWidth <= MOBILE_MAX;
       const step = stepForCount(opaque, mobile ? COUNT_MOBILE : COUNT_DESKTOP);
       field = createField(
-        sampleParticles(sample, { step }),
+        sampleParticles(sample, { step, edgeRadius: step * 1.6 }),
         sample.width,
         sample.height,
         step,
@@ -85,6 +100,9 @@ export function ParticlePortrait({ src }: { src: string }) {
       );
       layoutField(field, box, true);
       if (introAt < 0) scatterField(field);
+      embers = Array.from({ length: mobile ? EMBERS_MOBILE : EMBERS_DESKTOP }, () =>
+        spawnEmber(box, Math.random, true),
+      );
     };
 
     const resize = () => {
@@ -115,7 +133,9 @@ export function ParticlePortrait({ src }: { src: string }) {
       const { x, y, size } = field;
       // One path per colour bucket: far fewer state changes than per-dot fillRect.
       for (const b of field.buckets) {
-        ctx.globalAlpha = b.alpha;
+        const a = b.alpha * (b.edge ? 1 : interior);
+        if (a < 0.01) continue;
+        ctx.globalAlpha = a;
         ctx.fillStyle = b.color;
         ctx.beginPath();
         for (let i = b.start; i < b.end; i++) {
@@ -124,6 +144,20 @@ export function ParticlePortrait({ src }: { src: string }) {
         }
         ctx.fill();
       }
+      // Sparks: additive, with a soft square halo (cheaper than shadowBlur).
+      ctx.globalCompositeOperation = 'lighter';
+      for (const e of embers) {
+        const a = emberAlpha(e);
+        if (a <= 0) continue;
+        const s = e.size;
+        ctx.globalAlpha = a * 0.18;
+        ctx.fillStyle = '#ff6a00';
+        ctx.fillRect(e.x - s * 2, e.y - s * 2, s * 4, s * 4);
+        ctx.globalAlpha = a * 0.9;
+        ctx.fillStyle = '#ffc27a';
+        ctx.fillRect(e.x - s / 2, e.y - s / 2, s, s);
+      }
+      ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1;
     };
 
@@ -143,11 +177,29 @@ export function ParticlePortrait({ src }: { src: string }) {
       const progress = exitRef.current?.get() ?? 0;
       const scatter = Math.min(1, Math.max(0, (progress - 0.04) / 0.7));
 
-      stepParticles(field, p, dt, {
-        time: now / 1000,
-        elapsed: (now - introAt) / 1000,
-        scatter,
-      });
+      const elapsed = (now - introAt) / 1000;
+      stepParticles(field, p, dt, { time: now / 1000, elapsed, scatter });
+
+      interior = interiorAlpha(elapsed, scatter, FORM_AT);
+      const nowFormed = interior < 0.5;
+      if (nowFormed !== formed) {
+        formed = nowFormed;
+        wrap.toggleAttribute('data-formed', formed); // CSS fades the real photo in / out
+      }
+
+      if (elapsed > 0.6) {
+        const step = Math.min(dt, 1 / 30);
+        for (let i = 0; i < embers.length; i++) {
+          const e = embers[i]!;
+          if (p) {
+            const dx = e.x - p.x;
+            const dy = e.y - p.y;
+            const d = Math.hypot(dx, dy);
+            if (d < p.radius && d > 0) e.x += (dx / d) * (p.radius - d) * 0.15 * p.strength;
+          }
+          if (!stepEmber(e, step, now / 1000)) embers[i] = spawnEmber(box);
+        }
+      }
       draw();
       if (!live) {
         live = true;
@@ -248,6 +300,7 @@ export function ParticlePortrait({ src }: { src: string }) {
       window.removeEventListener('pointerout', onOut);
       window.removeEventListener('blur', onBlur);
       wrap.removeAttribute('data-live');
+      wrap.removeAttribute('data-formed');
     };
   }, [src]);
 

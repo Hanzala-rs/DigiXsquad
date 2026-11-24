@@ -398,7 +398,7 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
 .ds-center {
   position: relative;
   z-index: 2;
-  height: min(82vh, 820px);
+  height: min(88vh, 900px);
   aspect-ratio: 2 / 3;
   align-self: end;
   translate: 0 calc(var(--hero-exit) * -12vh);
@@ -487,17 +487,26 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   width: 100%;
   height: 100%;
 }
-/* Softer than full strength: bright orange dots on black read as harsh (client feedback). */
 .ds-particles[data-live] {
-  opacity: 0.72;
+  opacity: 0.9;
 }
+/* While the dots assemble the photo is hidden and the halo dimmed so the dots read. */
 .ds-center:has(.ds-particles[data-live]) {
   & .ds-portrait-base {
     opacity: 0;
   }
-  /* Dimmer halo so orange dots keep their contrast. */
   & .ds-halo {
     filter: blur(10px) brightness(0.5);
+  }
+}
+/* Then the dots dissolve into the real photo: softened (client: lower opacity) and it fades
+   back out into particles as the hero scrolls away. */
+.ds-center:has(.ds-particles[data-formed]) {
+  & .ds-portrait-base {
+    opacity: calc(0.85 * (1 - clamp(0, var(--hero-exit) * 2.5, 1)));
+  }
+  & .ds-halo {
+    filter: blur(10px) brightness(0.75);
   }
 }
 .ds-rim {
@@ -737,7 +746,7 @@ html[data-intro='reveal'] {
   }
   .ds-center {
     grid-row: 2;
-    height: min(66vh, 600px);
+    height: min(70vh, 640px);
   }
   .ds-particles {
     inset: -10% -16% 0;
