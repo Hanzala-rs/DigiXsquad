@@ -2,7 +2,9 @@ import uuid
 from collections.abc import AsyncIterator
 from datetime import datetime
 from functools import lru_cache
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy import DateTime, MetaData, func
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -59,3 +61,6 @@ async def get_session() -> AsyncIterator[AsyncSession]:
     """FastAPI dependency: one session per request."""
     async with get_sessionmaker()() as session:
         yield session
+
+
+DatabaseSession = Annotated[AsyncSession, Depends(get_session)]
