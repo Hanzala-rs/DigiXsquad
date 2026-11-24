@@ -13,24 +13,19 @@ export type ImageLike = {
   height: number;
 };
 
-/** A sampled pixel in image space. `lum` is 0–1. `edge`: near the silhouette outline. */
-export type SamplePoint = { x: number; y: number; lum: number; edge?: boolean };
+/** A sampled pixel in image space. `lum` is 0–1. */
+export type SamplePoint = { x: number; y: number; lum: number };
 
 export type SampleOptions = {
   /** Grid spacing in image pixels (may be fractional). */
   step: number;
   /** A pixel is a candidate if its alpha is above this (0–255). */
   alphaThreshold?: number;
-  /**
-   * If set, mark points that have a transparent pixel within this many image px (8 directions)
-   * as `edge`: the glowing outline that stays visible over the photo.
-   */
-  edgeRadius?: number;
 };
 
 export type Box = { x: number; y: number; w: number; h: number };
 
-export type Bucket = { start: number; end: number; color: string; alpha: number; edge: boolean };
+export type Bucket = { start: number; end: number; color: string; alpha: number };
 
 export type ParticleField = {
   count: number;
@@ -53,8 +48,6 @@ export type ParticleField = {
   size: Float32Array;
   /** Per-particle random 0–1 (jitter phase, scatter amount, hole direction at dead centre). */
   seed: Float32Array;
-  /** 1 if the particle is on the silhouette outline. */
-  edge: Uint8Array;
   /** Seconds after the intro starts before this particle is released toward home. */
   wake: Float32Array;
   buckets: Bucket[];
@@ -120,15 +113,6 @@ export function sampleParticles(img: ImageLike, opts: SampleOptions): SamplePoin
   const { width: w, height: h, data } = img;
   const step = Math.max(1, opts.step);
   const thr = opts.alphaThreshold ?? 128;
-  const er = opts.edgeRadius ?? 0;
-  const transparentAt = (x: number, y: number) => {
-    const xi = Math.floor(x);
-    const yi = Math.floor(y);
-    // Below the image the figure continues (it is cut off there): not an outline.
-    if (yi >= h) return false;
-    if (xi < 0 || yi < 0 || xi >= w) return true;
-    return (data[(yi * w + xi) * 4 + 3] ?? 0) <= thr;
-  };
   const out: SamplePoint[] = [];
   for (let y = step / 2; y < h; y += step) {
     const py = Math.floor(y);
@@ -138,34 +122,10 @@ export function sampleParticles(img: ImageLike, opts: SampleOptions): SamplePoin
       const r = data[i] ?? 0;
       const g = data[i + 1] ?? 0;
       const b = data[i + 2] ?? 0;
-      const point: SamplePoint = { x, y, lum: (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 };
-      if (er > 0) point.edge = isEdge(x, y, er, transparentAt);
-      out.push(point);
+      out.push({ x, y, lum: (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 });
     }
   }
   return out;
-}
-
-const DIRS = [
-  [1, 0],
-  [-1, 0],
-  [0, 1],
-  [0, -1],
-  [0.7071, 0.7071],
-  [-0.7071, 0.7071],
-  [0.7071, -0.7071],
-  [-0.7071, -0.7071],
-] as const;
-
-/** True if a transparent pixel lies `r` px away in any of 8 directions. */
-function isEdge(
-  x: number,
-  y: number,
-  r: number,
-  transparentAt: (x: number, y: number) => boolean,
-): boolean {
-  for (const [dx, dy] of DIRS) if (transparentAt(x + dx * r, y + dy * r)) return true;
-  return false;
 }
 
 const mix = (a: RGB, b: RGB, t: number) =>
@@ -193,12 +153,9 @@ export function createField(
   /** 0–1: random offset inside each grid cell (0 = exact grid). */
   jitter = 0,
 ): ParticleField {
-  // Bucket key: edge flag, then hue, then luminance level (edge dots get their own buckets so
-  // the renderer can fade the interior without touching the outline).
-  const perEdge = PALETTE.base.length * LEVELS;
   const tagged = points.map((p) => {
     const level = Math.min(LEVELS - 1, Math.floor(p.lum * LEVELS));
-    return { p, bucket: (p.edge ? perEdge : 0) + pickHue(rand()) * LEVELS + level };
+    return { p, bucket: pickHue(rand()) * LEVELS + level };
   });
   tagged.sort((a, b) => a.bucket - b.bucket);
 
@@ -220,7 +177,6 @@ export function createField(
     vy: f32(),
     size: f32(),
     seed: f32(),
-    edge: new Uint8Array(n),
     wake: f32(),
     buckets: [],
     cx: 0,
@@ -236,21 +192,16 @@ export function createField(
     field.iy[i] = jitter ? p.y + (rand() - 0.5) * step * jitter : p.y;
     field.lum[i] = p.lum;
     field.seed[i] = rand();
-    field.edge[i] = p.edge ? 1 : 0;
     if (bucket !== current) {
-      const edge = bucket >= perEdge;
-      const key = bucket % perEdge;
-      const hue = Math.floor(key / LEVELS);
-      const lvl = (key % LEVELS) + 0.5;
+      const hue = Math.floor(bucket / LEVELS);
+      const lvl = (bucket % LEVELS) + 0.5;
       const l = lvl / LEVELS;
       const base = PALETTE.base[hue] ?? PALETTE.base[0]!;
       field.buckets.push({
         start: i,
         end: i,
-        // The outline glows brighter and lighter than the interior dots.
-        color: mix(base, PALETTE.light, edge ? 0.35 + l * 0.3 : Math.pow(l, 2) * 0.55),
-        alpha: edge ? 0.95 : brightness(l),
-        edge,
+        color: mix(base, PALETTE.light, Math.pow(l, 2) * 0.55),
+        alpha: brightness(l),
       });
       current = bucket;
     }
@@ -275,9 +226,7 @@ export function layoutField(field: ParticleField, box: Box, snap = false): void 
     const hy = oy + field.iy[i]! * scale;
     field.hx[i] = hx;
     field.hy[i] = hy;
-    field.size[i] = field.edge[i]
-      ? Math.min(2.4, Math.max(1.1, spacing * 0.8)) // fine glow, not chunky squares on phones
-      : Math.max(0.8, spacing * 0.78 * brightness(field.lum[i]!));
+    field.size[i] = Math.max(0.8, spacing * 0.78 * brightness(field.lum[i]!));
     sx += hx;
     sy += hy;
     if (snap) {
@@ -389,70 +338,4 @@ export function stepParticles(
     x[i] = x[i]! + vxi * t;
     y[i] = y[i]! + vyi * t;
   }
-}
-
-/* ───────── Photo dissolve ───────── */
-
-const smooth = (t: number) => {
-  const c = Math.min(Math.max(t, 0), 1);
-  return c * c * (3 - 2 * c);
-};
-
-/**
- * Opacity of the interior (non-outline) dots. They form the portrait during the intro, then
- * dissolve into the real photo `formAt` seconds in (over `fade` s). Scrolling the hero away
- * (`scatter`) brings them back as the photo fades, so the founder breaks up into particles.
- */
-export function interiorAlpha(elapsed: number, scatter: number, formAt = 1.5, fade = 1): number {
-  const dissolve = 1 - smooth((elapsed - formAt) / fade);
-  return Math.max(dissolve, smooth(scatter * 2.5));
-}
-
-/* ───────── Embers: sparks rising around the figure ───────── */
-
-export type Ember = {
-  x: number;
-  y: number;
-  /** Rise speed (px/s). */
-  vy: number;
-  /** Seconds lived / total. */
-  age: number;
-  life: number;
-  size: number;
-  /** Sway phase. */
-  phase: number;
-};
-
-/**
- * A new spark near the bottom of the figure box, in a band on either side of the figure so it
- * never drifts across the face or suit. `anywhere`: already mid-flight (initial fill).
- */
-export function spawnEmber(box: Box, rand: () => number = Math.random, anywhere = false): Ember {
-  const life = 2.6 + rand() * 2.6;
-  const left = rand() < 0.5;
-  return {
-    x: box.x + box.w * (left ? 0.02 + rand() * 0.2 : 0.78 + rand() * 0.2),
-    y: anywhere ? box.y + box.h * (0.25 + rand() * 0.75) : box.y + box.h * (0.92 + rand() * 0.1),
-    vy: 28 + rand() * 46,
-    age: anywhere ? rand() * life : 0,
-    life,
-    size: 1.2 + rand() * 1.8,
-    phase: rand() * Math.PI * 2,
-  };
-}
-
-/** Advance in place; returns false once the spark has burnt out. */
-export function stepEmber(e: Ember, dt: number, time: number): boolean {
-  e.age += dt;
-  e.y -= e.vy * dt;
-  e.x += Math.sin(time * 1.4 + e.phase) * 12 * dt;
-  return e.age < e.life;
-}
-
-/** Fade in over the first 20% of life, out over the last 40%. */
-export function emberAlpha(e: Ember): number {
-  const t = e.age / e.life;
-  if (t < 0.2) return t / 0.2;
-  if (t > 0.6) return Math.max(0, (1 - t) / 0.4);
-  return 1;
 }

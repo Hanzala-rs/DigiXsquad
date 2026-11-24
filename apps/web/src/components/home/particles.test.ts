@@ -2,13 +2,9 @@ import {
   brightness,
   countOpaque,
   createField,
-  emberAlpha,
-  interiorAlpha,
   layoutField,
   sampleParticles,
   scatterField,
-  spawnEmber,
-  stepEmber,
   stepForCount,
   stepParticles,
   type ImageLike,
@@ -176,67 +172,5 @@ describe('stepParticles', () => {
     const meanY = (a: Float32Array) => a.reduce((s, v) => s + v, 0) / a.length;
     stepFor(2, () => stepParticles(f, null, 1 / 60, { jitter: 0, scatter: 1 }));
     expect(meanY(f.y)).toBeLessThan(meanY(f.hy) - 50);
-  });
-});
-
-describe('outline, dissolve and embers', () => {
-  // 10×10 opaque square in the middle of a 20×20 transparent image.
-  const square = () => {
-    const data = new Uint8ClampedArray(20 * 20 * 4);
-    for (let y = 5; y < 15; y++)
-      for (let x = 5; x < 15; x++) {
-        const i = (y * 20 + x) * 4;
-        data.set([200, 200, 200, 255], i);
-      }
-    return { data, width: 20, height: 20 };
-  };
-
-  it('marks only points near the silhouette as edge', () => {
-    const pts = sampleParticles(square(), { step: 1, edgeRadius: 2 });
-    const at = (x: number, y: number) => pts.find((p) => p.x === x + 0.5 && p.y === y + 0.5);
-    expect(at(5, 9)?.edge).toBe(true); // left border
-    expect(at(9, 9)?.edge).toBe(false); // centre
-    expect(sampleParticles(square(), { step: 1 })[0]!.edge).toBeUndefined();
-  });
-
-  it('does not treat the image bottom as an outline', () => {
-    const data = new Uint8ClampedArray(4 * 4 * 4).fill(255); // fully opaque 4×4
-    const pts = sampleParticles({ data, width: 4, height: 4 }, { step: 1, edgeRadius: 1 });
-    const bottomMiddle = pts.find((p) => p.x === 1.5 && p.y === 3.5);
-    expect(bottomMiddle?.edge).toBe(false); // figure is cut off there, not outlined
-    const bottomLeft = pts.find((p) => p.x === 0.5 && p.y === 3.5);
-    expect(bottomLeft?.edge).toBe(true); // the side of the image still counts
-    const fieldPts = sampleParticles(square(), { step: 1, edgeRadius: 2 });
-    const f = createField(fieldPts, 20, 20, 1, () => 0.3);
-    expect(f.buckets.some((b) => b.edge)).toBe(true);
-    expect(f.buckets.some((b) => !b.edge)).toBe(true);
-    for (const b of f.buckets)
-      for (let i = b.start; i < b.end; i++) expect(f.edge[i]).toBe(b.edge ? 1 : 0);
-  });
-
-  it('interior dots dissolve into the photo, and come back when scrolled away', () => {
-    expect(interiorAlpha(0.5, 0)).toBe(1);
-    expect(interiorAlpha(1.5 + 1.2, 0)).toBe(0);
-    expect(interiorAlpha(10, 0.5)).toBe(1);
-    const mid = interiorAlpha(2, 0);
-    expect(mid).toBeGreaterThan(0);
-    expect(mid).toBeLessThan(1);
-  });
-
-  it('embers spawn beside the figure, rise, fade and burn out', () => {
-    const box = { x: 0, y: 0, w: 100, h: 200 };
-    for (let k = 0; k < 50; k++) {
-      const e = spawnEmber(box);
-      expect(e.x < 23 || e.x > 77).toBe(true);
-    }
-    const e = spawnEmber(box, () => 0.5);
-    const y0 = e.y;
-    expect(emberAlpha(e)).toBe(0);
-    expect(stepEmber(e, 1, 0)).toBe(true);
-    expect(e.y).toBeLessThan(y0);
-    expect(emberAlpha(e)).toBeGreaterThan(0);
-    e.age = e.life;
-    expect(emberAlpha(e)).toBe(0);
-    expect(stepEmber(e, 0.1, 0)).toBe(false);
   });
 });
