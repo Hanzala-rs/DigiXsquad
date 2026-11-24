@@ -3,8 +3,16 @@ import { homeAnchors, homeSections } from '@/content/home';
 import { siteContent, squads } from '@/lib/seed-data';
 import { SquadsSection } from './SquadsSection';
 
-// motion needs IntersectionObserver + matchMedia, which jsdom lacks.
+// motion needs IntersectionObserver + matchMedia, the runway needs ResizeObserver; jsdom lacks them.
 beforeAll(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
   vi.stubGlobal(
     'IntersectionObserver',
     class {
@@ -70,6 +78,20 @@ describe('SquadsSection', () => {
     expect(screen.getByRole('link', { name: homeSections.squads.allSquads })).toHaveAttribute(
       'href',
       '/squads',
+    );
+  });
+
+  it('closes the grid with a custom-squad card that links to the hire form', () => {
+    const { custom } = homeSections.squads;
+    render(<SquadsSection squads={squads} />);
+    expect(screen.getAllByRole('listitem', { name: undefined }).length).toBeGreaterThan(
+      squads.length,
+    );
+    const card = screen.getByRole('heading', { level: 3, name: custom.title }).closest('article');
+    expect(card).not.toBeNull();
+    expect(within(card as HTMLElement).getByRole('link', { name: custom.cta })).toHaveAttribute(
+      'href',
+      custom.href,
     );
   });
 });
