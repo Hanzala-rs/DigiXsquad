@@ -5,14 +5,27 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { isActivePath, mainNav } from './nav-links';
+import { isActivePath, mainNav, mobileNavTitles, pageNav } from './nav-links';
+import { NavItemLink } from './SectionNav';
 
-/** Hamburger menu below 1180px. On very small phones (< 400px) it also holds the CTA. */
-export function MobileMenu({ ctaLabel }: { ctaLabel: string }) {
+const itemClass =
+  'block border-l-2 border-transparent px-4 py-3 text-muted-foreground transition-colors hover:bg-primary/5 hover:text-foreground [&[aria-current]]:border-primary [&[aria-current]]:text-foreground';
+const titleClass =
+  'px-4 pt-3 pb-1 font-heading text-[11px] font-semibold tracking-[0.2em] text-muted-foreground/80 uppercase';
+
+/** Hamburger menu below 900px: home-section anchors, then the full page list. */
+export function MobileMenu({
+  ctaLabel,
+  activeSection,
+}: {
+  ctaLabel: string;
+  activeSection: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const close = () => setOpen(false);
 
-  // Close on navigation and on Esc.
+  // Close on navigation and on Esc (anchor clicks on `/` don't change the path: see onClick).
   const [lastPath, setLastPath] = useState(pathname);
   if (pathname !== lastPath) {
     setLastPath(pathname);
@@ -26,7 +39,7 @@ export function MobileMenu({ ctaLabel }: { ctaLabel: string }) {
   }, [open]);
 
   return (
-    <div className="min-[1180px]:hidden">
+    <div className="min-[900px]:hidden">
       <button
         type="button"
         aria-expanded={open}
@@ -42,13 +55,33 @@ export function MobileMenu({ ctaLabel }: { ctaLabel: string }) {
           id="mobile-menu"
           className="chamfer absolute inset-x-4 top-[calc(100%+8px)] max-h-[calc(100dvh-96px)] overflow-y-auto bg-surface/95 p-2 shadow-[inset_0_0_0_1px_rgb(255_106_0/0.35)] backdrop-blur-md sm:left-auto sm:w-80"
         >
-          <ul className="flex flex-col text-base">
+          <p id="mobile-menu-sections" className={titleClass}>
+            {mobileNavTitles.sections}
+          </p>
+          <ul aria-labelledby="mobile-menu-sections" className="flex flex-col text-base">
             {mainNav.map((item) => (
+              <li key={item.href}>
+                <NavItemLink
+                  item={item}
+                  pathname={pathname}
+                  activeSection={activeSection}
+                  onClick={close}
+                  className={itemClass}
+                />
+              </li>
+            ))}
+          </ul>
+          <p id="mobile-menu-pages" className={titleClass}>
+            {mobileNavTitles.pages}
+          </p>
+          <ul aria-labelledby="mobile-menu-pages" className="flex flex-col text-sm">
+            {pageNav.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={close}
                   aria-current={isActivePath(pathname, item.href) ? 'page' : undefined}
-                  className="block border-l-2 border-transparent px-4 py-3 text-muted-foreground transition-colors hover:bg-primary/5 hover:text-foreground aria-[current=page]:border-primary aria-[current=page]:text-foreground"
+                  className={itemClass}
                 >
                   {item.label}
                 </Link>
@@ -57,7 +90,9 @@ export function MobileMenu({ ctaLabel }: { ctaLabel: string }) {
           </ul>
           <div className="p-2 min-[400px]:hidden">
             <Button asChild size="sm" className="w-full">
-              <Link href="/hire">{ctaLabel}</Link>
+              <Link href="/hire" onClick={close}>
+                {ctaLabel}
+              </Link>
             </Button>
           </div>
         </div>

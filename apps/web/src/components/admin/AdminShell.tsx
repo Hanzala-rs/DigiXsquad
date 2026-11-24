@@ -1,6 +1,16 @@
 'use client';
 
-import { ClipboardList, LayoutDashboard, LogOut, Menu, X, type LucideIcon } from 'lucide-react';
+import {
+  Briefcase,
+  ClipboardList,
+  LayoutDashboard,
+  LayoutTemplate,
+  LogOut,
+  Menu,
+  Users,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,7 +27,7 @@ type NavItem = {
   exact?: boolean;
 };
 
-/** Slice B adds talents, engagements, catalog, site content, users, audit logs, messages. */
+/** Next: catalog, users, audit logs, messages. */
 export const adminNav: NavItem[] = [
   {
     href: '/admin',
@@ -27,6 +37,19 @@ export const adminNav: NavItem[] = [
     exact: true,
   },
   { href: '/admin/requests', label: 'Requests', icon: ClipboardList, permission: 'requests.read' },
+  { href: '/admin/talents', label: 'Talents', icon: Users, permission: 'talents.manage' },
+  {
+    href: '/admin/engagements',
+    label: 'Engagements',
+    icon: Briefcase,
+    permission: 'engagements.manage',
+  },
+  {
+    href: '/admin/site-content',
+    label: 'Homepage',
+    icon: LayoutTemplate,
+    permission: 'content.manage',
+  },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

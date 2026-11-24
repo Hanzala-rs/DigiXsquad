@@ -74,8 +74,9 @@
     background: var(--background);
     color-scheme: dark;
   }
+  /* No body background: <html> paints the page colour, so fixed decorative layers with a
+     negative z-index (home swirl) can sit between the page colour and the content. */
   body {
-    background: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -322,8 +323,12 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   }
 }
 
-/* Hero */
+/* Hero
+   --hero-exit (0–1) is written by HeroStage while the hero scrolls away: words drift apart and
+   fade, the portrait lifts (its particles scatter in JS), the CTA fades. Stays 0 under reduced
+   motion. It uses `translate`/child opacity so it composes with the intro `transform` keyframes. */
 .ds-hero {
+  --hero-exit: 0;
   position: relative;
   height: 100svh;
   min-height: 600px;
@@ -335,22 +340,43 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   padding: 80px clamp(12px, 3vw, 40px) 0;
 }
 .ds-word {
-  font: 700 clamp(2.6rem, 7.4vw, 8.5rem) / 0.85 var(--font-heading);
-  letter-spacing: 0.04em;
+  font: 700 clamp(2.8rem, 7.9vw, 9.25rem) / 0.85 var(--font-heading);
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
   position: relative;
   z-index: 1;
 }
+.ds-word > :not(.sr-only) {
+  opacity: calc(1 - var(--hero-exit) * 1.6);
+}
 .ds-word-left {
   justify-self: end;
-  margin-right: 2vw;
+  margin-right: 0.6vw;
   color: var(--foreground);
+  translate: calc(var(--hero-exit) * -30vw) 0;
+}
+/* Chrome: white → light steel → dark band → white, with a faint cold glow. */
+.ds-word-left .ds-word-text {
+  background: linear-gradient(
+    180deg,
+    #fff 0%,
+    #f2f2f2 28%,
+    #d4d4d4 47%,
+    #8a8a8a 53%,
+    #c4c4c4 74%,
+    #fff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px rgb(255 255 255 / 0.14)) drop-shadow(0 2px 0 rgb(0 0 0 / 0.6));
 }
 .ds-word-right {
   justify-self: start;
-  margin-left: 2vw;
+  margin-left: 0.6vw;
   filter: drop-shadow(0 0 24px rgb(255 106 0 / 0.35));
+  translate: calc(var(--hero-exit) * 30vw) 0;
 }
 .ds-word-right .ds-word-text {
   background: linear-gradient(180deg, var(--glow), var(--primary) 45%, var(--deep));
@@ -372,9 +398,11 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
 .ds-center {
   position: relative;
   z-index: 2;
-  height: min(82vh, 820px);
+  height: min(86vh, 880px);
   aspect-ratio: 2 / 3;
   align-self: end;
+  translate: 0 calc(var(--hero-exit) * -12vh);
+  opacity: calc(1 - clamp(0, (var(--hero-exit) - 0.35) * 1.6, 1));
 }
 .ds-halo {
   position: absolute;
@@ -435,6 +463,43 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
     linear-gradient(to right, transparent 0, #000 11%, #000 89%, transparent 100%);
   mask-composite: intersect;
 }
+/* Static photo (LCP + fallback). Fades out once the particle canvas has drawn its first frame. */
+.ds-portrait-base {
+  position: absolute;
+  inset: 0;
+  transition: opacity 1.2s var(--ease-out);
+}
+/* Particle canvas: wider/taller than the figure so the pointer hole and scroll scatter have room.
+   JS lays the dots out in the same box as .ds-portrait (top 10%, full width). */
+.ds-particles {
+  position: absolute;
+  inset: -12% -40% 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  mask-image:
+    linear-gradient(to bottom, #000 72%, transparent 99%),
+    linear-gradient(to right, transparent 0, #000 14%, #000 86%, transparent 100%);
+  mask-composite: intersect;
+}
+.ds-particles canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Softer than full strength: bright orange dots on black read as harsh (client feedback). */
+.ds-particles[data-live] {
+  opacity: 0.6;
+}
+.ds-center:has(.ds-particles[data-live]) {
+  & .ds-portrait-base {
+    opacity: 0;
+  }
+  /* Dimmer halo so orange dots keep their contrast. */
+  & .ds-halo {
+    filter: blur(10px) brightness(0.5);
+  }
+}
 .ds-rim {
   position: absolute;
   inset: 0;
@@ -463,6 +528,35 @@ html:is([data-intro='burst'], [data-intro='reveal']) .ds-flash {
   gap: 14px;
   width: min(92vw, 620px);
   text-align: center;
+}
+.ds-cta > * {
+  opacity: calc(1 - var(--hero-exit) * 2.4);
+}
+.ds-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+/* "● NAME · TITLE" status line under the portrait */
+.ds-founder {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font: 500 11px / 1.4 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #d4d4d4;
+  text-shadow: 0 1px 8px #000;
+}
+.ds-founder-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow:
+    0 0 0 3px rgb(34 197 94 / 0.18),
+    0 0 10px rgb(34 197 94 / 0.7);
 }
 
 /* Hidden "before" state while the popup is on screen */
@@ -622,7 +716,7 @@ html[data-intro='reveal'] {
     justify-items: center;
   }
   .ds-word {
-    font-size: clamp(2.8rem, 17vw, 6rem);
+    font-size: clamp(3.1rem, 19vw, 6.75rem);
     position: absolute;
     z-index: 3;
   }
@@ -643,13 +737,33 @@ html[data-intro='reveal'] {
   }
   .ds-center {
     grid-row: 2;
-    height: min(66vh, 600px);
+    height: min(70vh, 640px);
+  }
+  .ds-particles {
+    inset: -10% -16% 0;
   }
   .ds-shade {
     height: 40vh;
   }
   .ds-cta {
     bottom: 22px;
+    gap: 10px;
+  }
+  .ds-cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: min(100%, 320px);
+  }
+  .ds-founder {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+  }
+}
+
+/* Reduced motion: static photo only (the canvas never starts; hide it to be safe). */
+@media (prefers-reduced-motion: reduce) {
+  .ds-particles {
+    display: none;
   }
 }
 
@@ -706,48 +820,23 @@ body {
   overflow-x: clip;
 }
 
-/* ───────── Hero orbits: rotating dot rings behind DIGITAL · portrait · SQUAD ───────── */
-.ds-orbits {
-  position: absolute;
-  left: 50%;
-  top: 54%;
-  width: min(115vh, 1150px, 140vw);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  z-index: 0;
-  opacity: 0.55;
-  pointer-events: none;
-  mask-image: radial-gradient(circle, #000 55%, transparent 72%);
+/* ───────── Home one-pager: smooth anchor scrolling that clears the fixed navbar ───────── */
+html {
+  scroll-behavior: smooth;
 }
-.ds-orbits svg {
-  width: 100%;
-  height: 100%;
+:where(section, footer)[id] {
+  scroll-margin-top: 4.5rem;
 }
-.ds-orbit {
-  transform-box: view-box;
-  transform-origin: 50% 50%;
-  animation: ds-spin 90s linear infinite; /* duration/direction set per ring in HeroOrbits */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
+
+/* Slow rotation (used as `animate-[ds-spin_…]`). */
 @keyframes ds-spin {
   to {
     transform: rotate(360deg);
-  }
-}
-html:is([data-intro='pending'], [data-intro='burst']) .ds-orbits {
-  opacity: 0;
-}
-html[data-intro='reveal'] .ds-orbits {
-  animation: ds-orbits-in 1.4s ease 0.3s both;
-}
-@keyframes ds-orbits-in {
-  from {
-    opacity: 0;
-  }
-}
-@media (max-width: 819px) {
-  .ds-orbits {
-    top: 60%;
-    width: min(95vh, 160vw);
   }
 }
 

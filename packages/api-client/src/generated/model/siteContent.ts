@@ -16,8 +16,12 @@
 import type { SiteContentAbout } from './siteContentAbout';
 import type { SiteContentCompany } from './siteContentCompany';
 import type { SiteContentFaqsItem } from './siteContentFaqsItem';
+import type { SiteContentFounder } from './siteContentFounder';
 import type { SiteContentHero } from './siteContentHero';
+import type { SiteContentProjectsItem } from './siteContentProjectsItem';
 import type { SiteContentStatsItem } from './siteContentStatsItem';
+import type { Sponsor } from './sponsor';
+import type { TeamMember } from './teamMember';
 import type { TitledItem } from './titledItem';
 
 export interface SiteContent {
@@ -29,4 +33,14 @@ export interface SiteContent {
   process: TitledItem[];
   compliance: TitledItem[];
   faqs: SiteContentFaqsItem[];
+  /** Founder shown as the particle portrait in the home hero. */
+  founder?: SiteContentFounder;
+  /** Service cards in the home "What we do" section. */
+  what_we_do?: TitledItem[];
+  /** Leadership cards in the home "Team" section, in display order. */
+  team?: TeamMember[];
+  /** Admin-set counters in the home "Our projects" section. */
+  projects?: SiteContentProjectsItem[];
+  /** Sponsors and partners listed in the footer. */
+  sponsors?: Sponsor[];
 }

@@ -3,9 +3,9 @@
 import type { HireRequestDetail } from '@digixsquad/api-client';
 import { ApiError } from '@digixsquad/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Download, FileText, Loader2, Mail, MessageCircle, Phone } from 'lucide-react';
+import { Download, FileText, Loader2, Mail, MessageCircle, Phone } from 'lucide-react';
 import Link from 'next/link';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import {
   budgetRangeOptions,
   contractTypeOptions,
@@ -23,18 +23,8 @@ import { formatBytes } from '@/lib/uploads';
 import { isRealPhone, telHref } from '@/lib/placeholders';
 import { whatsappLink } from '@/lib/whatsapp';
 import { useCan } from '../AdminSession';
-import { ErrorState, Panel, Skeleton, StatusBadge } from '../ui';
+import { BackLink, Def, ErrorState, Panel, Skeleton, StatusBadge } from '../ui';
 import { MatchesPanel } from './MatchesPanel';
-
-function Def({ k, v }: { k: string; v?: ReactNode }) {
-  if (v === undefined || v === null || v === '') return null;
-  return (
-    <>
-      <dt className="text-muted-foreground">{k}</dt>
-      <dd className="break-words">{v}</dd>
-    </>
-  );
-}
 
 /** Shared: after any mutation, refresh this request + lists + dashboard. */
 function useRefresh(id: string) {
@@ -325,12 +315,7 @@ export function RequestDetail({ id }: { id: string }) {
 
   return (
     <>
-      <Link
-        href="/admin/requests"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" /> Requests
-      </Link>
+      <BackLink href="/admin/requests">Requests</BackLink>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="font-heading text-sm font-semibold tracking-[0.2em] text-primary uppercase">

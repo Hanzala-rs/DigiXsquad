@@ -105,6 +105,10 @@ export const ListRolesResponse = zod.array(ListRolesResponseItem)
 /**
  * Editable site copy (hero, about, mission, vision, values, why us, stats, FAQs).
  */
+export const getSiteContentResponseProjectsItemValueMin = 0;
+
+
+
 export const GetSiteContentResponse = zod.object({
   "company": zod.object({
   "name": zod.string(),
@@ -155,7 +159,33 @@ export const GetSiteContentResponse = zod.object({
   "faqs": zod.array(zod.object({
   "question": zod.string(),
   "answer": zod.string()
-}))
+})),
+  "founder": zod.object({
+  "name": zod.string(),
+  "title": zod.string(),
+  "portrait_alt": zod.string().optional()
+}).optional().describe('Founder shown as the particle portrait in the home hero.'),
+  "what_we_do": zod.array(zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "icon": zod.string().optional()
+})).optional().describe('Service cards in the home "What we do" section.'),
+  "team": zod.array(zod.object({
+  "name": zod.string(),
+  "title": zod.string(),
+  "bio": zod.string().optional(),
+  "photo_url": zod.string().optional().describe('Absolute URL or a site path such as /brand/founder-cutout.webp')
+})).optional().describe('Leadership cards in the home "Team" section, in display order.'),
+  "projects": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.int().min(getSiteContentResponseProjectsItemValueMin),
+  "suffix": zod.string().optional().describe('Shown after the number, e.g. "+"')
+})).optional().describe('Admin-set counters in the home "Our projects" section.'),
+  "sponsors": zod.array(zod.object({
+  "name": zod.string(),
+  "logo_url": zod.string().optional(),
+  "url": zod.url().optional()
+})).optional().describe('Sponsors and partners listed in the footer.')
 })
 
 
@@ -1178,6 +1208,10 @@ export const AdminDeleteRoleResponse = zod.void()
 /**
  * SUPER_ADMIN only.
  */
+export const adminUpdateSiteContentBodyProjectsItemValueMin = 0;
+
+
+
 export const AdminUpdateSiteContentBody = zod.object({
   "company": zod.object({
   "name": zod.string(),
@@ -1228,8 +1262,38 @@ export const AdminUpdateSiteContentBody = zod.object({
   "faqs": zod.array(zod.object({
   "question": zod.string(),
   "answer": zod.string()
-}))
+})),
+  "founder": zod.object({
+  "name": zod.string(),
+  "title": zod.string(),
+  "portrait_alt": zod.string().optional()
+}).optional().describe('Founder shown as the particle portrait in the home hero.'),
+  "what_we_do": zod.array(zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "icon": zod.string().optional()
+})).optional().describe('Service cards in the home "What we do" section.'),
+  "team": zod.array(zod.object({
+  "name": zod.string(),
+  "title": zod.string(),
+  "bio": zod.string().optional(),
+  "photo_url": zod.string().optional().describe('Absolute URL or a site path such as /brand/founder-cutout.webp')
+})).optional().describe('Leadership cards in the home "Team" section, in display order.'),
+  "projects": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.int().min(adminUpdateSiteContentBodyProjectsItemValueMin),
+  "suffix": zod.string().optional().describe('Shown after the number, e.g. "+"')
+})).optional().describe('Admin-set counters in the home "Our projects" section.'),
+  "sponsors": zod.array(zod.object({
+  "name": zod.string(),
+  "logo_url": zod.string().optional(),
+  "url": zod.url().optional()
+})).optional().describe('Sponsors and partners listed in the footer.')
 })
+
+export const adminUpdateSiteContentResponseProjectsItemValueMin = 0;
+
+
 
 export const AdminUpdateSiteContentResponse = zod.object({
   "company": zod.object({
@@ -1281,7 +1345,33 @@ export const AdminUpdateSiteContentResponse = zod.object({
   "faqs": zod.array(zod.object({
   "question": zod.string(),
   "answer": zod.string()
-}))
+})),
+  "founder": zod.object({
+  "name": zod.string(),
+  "title": zod.string(),
+  "portrait_alt": zod.string().optional()
+}).optional().describe('Founder shown as the particle portrait in the home hero.'),
+  "what_we_do": zod.array(zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "icon": zod.string().optional()
+})).optional().describe('Service cards in the home "What we do" section.'),
+  "team": zod.array(zod.object({
+  "name": zod.string(),
+  "title": zod.string(),
+  "bio": zod.string().optional(),
+  "photo_url": zod.string().optional().describe('Absolute URL or a site path such as /brand/founder-cutout.webp')
+})).optional().describe('Leadership cards in the home "Team" section, in display order.'),
+  "projects": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.int().min(adminUpdateSiteContentResponseProjectsItemValueMin),
+  "suffix": zod.string().optional().describe('Shown after the number, e.g. "+"')
+})).optional().describe('Admin-set counters in the home "Our projects" section.'),
+  "sponsors": zod.array(zod.object({
+  "name": zod.string(),
+  "logo_url": zod.string().optional(),
+  "url": zod.url().optional()
+})).optional().describe('Sponsors and partners listed in the footer.')
 })
 
 
