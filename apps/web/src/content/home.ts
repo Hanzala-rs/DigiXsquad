@@ -34,6 +34,16 @@ export const homeSections = {
     viewSquad: 'View squad',
     allSquads: 'All squads',
     units: { people: 'people', roles: 'Roles in this squad' },
+    /** Last grid cell: fills the 3×2 grid and points to a custom hire request. */
+    custom: {
+      eyebrow: 'Custom squad',
+      title: 'Need a different mix?',
+      description:
+        'Pick the exact roles, team size and duration. We build the squad around your project.',
+      steps: ['Choose roles', 'Set duration', 'Get a quote'],
+      cta: 'Build your squad',
+      href: '/hire',
+    },
   },
   vision: { eyebrow: 'Where we are going', visionTitle: 'Our vision', missionTitle: 'Our mission' },
   projects: {

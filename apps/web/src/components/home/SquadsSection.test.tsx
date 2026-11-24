@@ -72,4 +72,18 @@ describe('SquadsSection', () => {
       '/squads',
     );
   });
+
+  it('closes the grid with a custom-squad card that links to the hire form', () => {
+    const { custom } = homeSections.squads;
+    render(<SquadsSection squads={squads} />);
+    expect(screen.getAllByRole('listitem', { name: undefined }).length).toBeGreaterThan(
+      squads.length,
+    );
+    const card = screen.getByRole('heading', { level: 3, name: custom.title }).closest('article');
+    expect(card).not.toBeNull();
+    expect(within(card as HTMLElement).getByRole('link', { name: custom.cta })).toHaveAttribute(
+      'href',
+      custom.href,
+    );
+  });
 });

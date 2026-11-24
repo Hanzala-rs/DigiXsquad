@@ -6,14 +6,17 @@ import { Container, Eyebrow } from '@/components/sections/primitives';
 import { Button } from '@/components/ui/button';
 import { homeAnchors, homeSections } from '@/content/home';
 import { SquadsCard } from './squads-card';
+import { SquadsCustomCard } from './squads-custom-card';
 
 const copy = homeSections.squads;
 const headingId = `${homeAnchors.squads}-title`;
+/** Carousel slide on phones, plain grid cell from `sm` up. */
+const itemClass = 'w-[82%] max-w-sm shrink-0 snap-start sm:w-auto sm:max-w-none';
 
 /**
- * "Our squads": the seeded squads as chamfered cards.
- * Mobile: horizontal scroll-snap carousel (next card peeks in). Tablet: 2 columns.
- * Desktop: centered rows of 3 (5 squads → 3 + 2). Cards stagger in on scroll.
+ * "Our squads": the seeded squads as chamfered cards plus a closing "build your own squad"
+ * card, so 5 squads fill an even grid (3×2 desktop, 2×3 tablet) instead of a centred 3 + 2.
+ * Mobile: horizontal scroll-snap carousel (next card peeks in). Cards stagger in on scroll.
  */
 export function SquadsSection({ squads }: { squads: Squad[]; content?: SiteContent }) {
   return (
@@ -41,17 +44,16 @@ export function SquadsSection({ squads }: { squads: Squad[]; content?: SiteConte
             as="ul"
             stagger={0.08}
             amount={0.15}
-            className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pt-2 pb-6 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:flex lg:flex-wrap lg:justify-center [&::-webkit-scrollbar]:hidden"
+            className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pt-2 pb-6 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden"
           >
             {squads.map((squad, i) => (
-              <RevealItem
-                key={squad.slug}
-                as="li"
-                className="w-[82%] max-w-sm shrink-0 snap-start sm:w-auto sm:max-w-none sm:odd:last:col-span-2 sm:odd:last:mx-auto sm:odd:last:w-[calc(50%-0.625rem)] lg:w-[calc((100%-2.5rem)/3)] lg:odd:last:mx-0 lg:odd:last:w-[calc((100%-2.5rem)/3)]"
-              >
+              <RevealItem key={squad.slug} as="li" className={itemClass}>
                 <SquadsCard squad={squad} index={i} viewLabel={copy.viewSquad} />
               </RevealItem>
             ))}
+            <RevealItem as="li" className={itemClass}>
+              <SquadsCustomCard />
+            </RevealItem>
           </RevealGroup>
         )}
 
