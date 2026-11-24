@@ -3,8 +3,16 @@ import { homeAnchors, homeSections } from '@/content/home';
 import { siteContent, squads } from '@/lib/seed-data';
 import { SquadsSection } from './SquadsSection';
 
-// motion needs IntersectionObserver + matchMedia, which jsdom lacks.
+// motion needs IntersectionObserver + matchMedia, the runway needs ResizeObserver; jsdom lacks them.
 beforeAll(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
   vi.stubGlobal(
     'IntersectionObserver',
     class {
