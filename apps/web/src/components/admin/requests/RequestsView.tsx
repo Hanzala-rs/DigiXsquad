@@ -1,9 +1,8 @@
 'use client';
 
-import type { AdminListHireRequestsParams, OrgType, RequestStatus } from '@digixsquad/api-client';
+import type { AdminListHireRequestsParams } from '@digixsquad/api-client';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Download, Kanban, Loader2, Search, Table2 } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Input, Select } from '@/components/forms/fields';
 import { Button } from '@/components/ui/button';
@@ -12,42 +11,23 @@ import { downloadText, STATUS_ORDER, statusLabel } from '@/lib/admin/format';
 import { cn } from '@/lib/utils';
 import { useCan } from '../AdminSession';
 import { ErrorState, PageHeader } from '../ui';
+import { useUrlFilters } from '../useUrlFilters';
 import { RequestsBoard } from './RequestsBoard';
 import { RequestsTable } from './RequestsTable';
 
 const PAGE_SIZE = 20;
-const isStatus = (v: string | null): v is RequestStatus =>
-  !!v && (STATUS_ORDER as string[]).includes(v);
-const isOrg = (v: string | null): v is OrgType => v === 'GOVT' || v === 'PRIVATE';
 
-/** Requests: filters live in the URL so views are shareable and survive reloads. */
 export function RequestsView() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
+  const { params, set: setParams, page, setPage, oneOf } = useUrlFilters();
   const canExport = useCan('requests.export');
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<unknown>(null);
 
   const view = params.get('view') === 'board' ? 'board' : 'table';
-  const status = isStatus(params.get('status'))
-    ? (params.get('status') as RequestStatus)
-    : undefined;
-  const orgType = isOrg(params.get('org_type')) ? (params.get('org_type') as OrgType) : undefined;
+  const status = oneOf('status', STATUS_ORDER);
+  const orgType = oneOf('org_type', ['GOVT', 'PRIVATE'] as const);
   const q = params.get('q') ?? '';
-  const page = Math.max(1, Number(params.get('page')) || 1);
   const [search, setSearch] = useState(q);
-
-  const setParams = (patch: Record<string, string | undefined>) => {
-    const next = new URLSearchParams(params);
-    for (const [k, v] of Object.entries(patch)) {
-      if (v) next.set(k, v);
-      else next.delete(k);
-    }
-    if (!('page' in patch)) next.delete('page');
-    const s = next.toString();
-    router.replace(s ? `${pathname}?${s}` : pathname, { scroll: false });
-  };
 
   // Board shows every status as a column, so it ignores the status filter and pages.
   const query: AdminListHireRequestsParams =
@@ -190,11 +170,7 @@ export function RequestsView() {
       ) : view === 'board' ? (
         <RequestsBoard data={list.data} queryKey={qk.requests(query)} />
       ) : (
-        <RequestsTable
-          data={list.data}
-          loading={list.isFetching}
-          onPage={(p) => setParams({ page: p > 1 ? String(p) : undefined })}
-        />
+        <RequestsTable data={list.data} loading={list.isFetching} onPage={setPage} />
       )}
     </>
   );

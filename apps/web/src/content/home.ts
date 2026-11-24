@@ -1,10 +1,6 @@
 /**
- * Home hero copy that the contract's `SiteContent` doesn't cover yet.
- *
- * TODO(contract PR): add `hero.accent_left`, `hero.accent_right`, `hero.founder_name`,
- * `hero.founder_title` to `SiteContentHero` in packages/contract/openapi.yaml (Codex reviews),
- * then read these from getSiteContent() and delete this file.
- * Founder name + designation: waiting on the client (PLAN.md §11).
+ * Home page UI copy: section labels and hero decoration words. Business content (story,
+ * team, counters, sponsors, founder) comes from getSiteContent(), not from here.
  */
 export const homeHeroExtras = {
   wordLeft: 'Digital',
@@ -12,5 +8,38 @@ export const homeHeroExtras = {
   accentLeft: 'IT talent · on demand',
   accentRight: 'Monthly · Managed · Ready',
   introLoading: 'Assembling your squad',
+  enter: 'Enter',
+  /** Used only if site content has no founder.portrait_alt. */
   founderAlt: 'DigixSquad founder',
+} as const;
+
+/** Anchor ids, in page order. The navbar links to these on `/`. */
+export const homeAnchors = {
+  top: 'top',
+  about: 'about',
+  team: 'team',
+  squads: 'squads',
+  vision: 'vision',
+  projects: 'projects',
+  contact: 'contact',
+} as const;
+
+export const homeSections = {
+  about: { eyebrow: 'About the company', title: 'What we do' },
+  team: { eyebrow: 'Leadership', title: 'Team members' },
+  squads: {
+    eyebrow: 'Our squads',
+    title: 'Ready-to-deploy teams',
+    description: 'Pick a squad built for your kind of project, or hire individual roles.',
+    viewSquad: 'View squad',
+    allSquads: 'All squads',
+    units: { people: 'people', roles: 'Roles in this squad' },
+  },
+  vision: { eyebrow: 'Where we are going', visionTitle: 'Our vision', missionTitle: 'Our mission' },
+  projects: {
+    eyebrow: 'Track record',
+    title: 'Our projects',
+    cta: 'Start a request',
+    track: 'Track a request',
+  },
 } as const;

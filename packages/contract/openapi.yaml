@@ -1101,6 +1101,54 @@ components:
             properties:
               question: { type: string }
               answer: { type: string }
+        # ── Home one-pager (v2). Optional so older content stays valid. ──
+        founder:
+          type: object
+          description: Founder shown as the particle portrait in the home hero.
+          required: [name, title]
+          properties:
+            name: { type: string }
+            title: { type: string }
+            portrait_alt: { type: string }
+        what_we_do:
+          type: array
+          description: Service cards in the home "What we do" section.
+          items: { $ref: '#/components/schemas/TitledItem' }
+        team:
+          type: array
+          description: Leadership cards in the home "Team" section, in display order.
+          items: { $ref: '#/components/schemas/TeamMember' }
+        projects:
+          type: array
+          description: Admin-set counters in the home "Our projects" section.
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: integer, minimum: 0 }
+              suffix: { type: string, description: 'Shown after the number, e.g. "+"' }
+        sponsors:
+          type: array
+          description: Sponsors and partners listed in the footer.
+          items: { $ref: '#/components/schemas/Sponsor' }
+    TeamMember:
+      type: object
+      required: [name, title]
+      properties:
+        name: { type: string }
+        title: { type: string }
+        bio: { type: string }
+        photo_url:
+          type: string
+          description: Absolute URL or a site path such as /brand/founder-cutout.webp
+    Sponsor:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        logo_url: { type: string }
+        url: { type: string, format: uri }
     TitledItem:
       type: object
       required: [title, description]

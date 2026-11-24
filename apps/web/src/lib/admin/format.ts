@@ -1,4 +1,4 @@
-import type { RequestStatus } from '@digixsquad/api-client';
+import type { Availability, EngagementStatus, RequestStatus } from '@digixsquad/api-client';
 
 export const formatDate = (iso: string) =>
   new Date(iso.length === 10 ? `${iso}T00:00:00` : iso).toLocaleDateString('en-GB', {
@@ -45,15 +45,42 @@ export const STATUS_ORDER: RequestStatus[] = [
   'ON_HOLD',
 ];
 
+/** Badge colours shared by every status-like badge in admin. */
+export const tone = {
+  orange: 'bg-primary/15 text-glow shadow-[inset_0_0_0_1px_rgb(255_106_0/0.45)]',
+  sky: 'bg-sky-500/15 text-sky-300 shadow-[inset_0_0_0_1px_rgb(56_189_248/0.35)]',
+  violet: 'bg-violet-500/15 text-violet-300 shadow-[inset_0_0_0_1px_rgb(167_139_250/0.35)]',
+  amber: 'bg-amber-500/15 text-amber-300 shadow-[inset_0_0_0_1px_rgb(251_191_36/0.35)]',
+  green: 'bg-emerald-500/15 text-emerald-300 shadow-[inset_0_0_0_1px_rgb(52_211_153/0.35)]',
+  red: 'bg-red-500/15 text-red-300 shadow-[inset_0_0_0_1px_rgb(248_113_113/0.35)]',
+  grey: 'bg-neutral-500/15 text-neutral-300 shadow-[inset_0_0_0_1px_rgb(163_163_163/0.3)]',
+} as const;
+
 export const statusTone: Record<RequestStatus, string> = {
-  NEW: 'bg-primary/15 text-glow shadow-[inset_0_0_0_1px_rgb(255_106_0/0.45)]',
-  CONTACTED: 'bg-sky-500/15 text-sky-300 shadow-[inset_0_0_0_1px_rgb(56_189_248/0.35)]',
-  PROPOSAL_SENT: 'bg-violet-500/15 text-violet-300 shadow-[inset_0_0_0_1px_rgb(167_139_250/0.35)]',
-  NEGOTIATION: 'bg-amber-500/15 text-amber-300 shadow-[inset_0_0_0_1px_rgb(251_191_36/0.35)]',
-  WON: 'bg-emerald-500/15 text-emerald-300 shadow-[inset_0_0_0_1px_rgb(52_211_153/0.35)]',
-  LOST: 'bg-neutral-500/15 text-neutral-400 shadow-[inset_0_0_0_1px_rgb(163_163_163/0.3)]',
-  ON_HOLD: 'bg-neutral-500/15 text-neutral-300 shadow-[inset_0_0_0_1px_rgb(163_163_163/0.3)]',
+  NEW: tone.orange,
+  CONTACTED: tone.sky,
+  PROPOSAL_SENT: tone.violet,
+  NEGOTIATION: tone.amber,
+  WON: tone.green,
+  LOST: tone.grey,
+  ON_HOLD: tone.grey,
 };
+
+export const availabilityBadge: Record<Availability, { label: string; tone: string }> = {
+  AVAILABLE: { label: 'Available', tone: tone.green },
+  ON_ENGAGEMENT: { label: 'On engagement', tone: tone.sky },
+  NOTICE_PERIOD: { label: 'Notice period', tone: tone.amber },
+  INACTIVE: { label: 'Inactive', tone: tone.grey },
+};
+
+export const engagementBadge: Record<EngagementStatus, { label: string; tone: string }> = {
+  ACTIVE: { label: 'Active', tone: tone.green },
+  COMPLETED: { label: 'Completed', tone: tone.grey },
+  TERMINATED: { label: 'Terminated', tone: tone.red },
+};
+
+/** Renewal alert window used by the engagements list and dashboard. */
+export const RENEWAL_DAYS = 30;
 
 /** Admin-facing status names (the public /track labels are friendlier). */
 export const statusLabel: Record<RequestStatus, string> = {

@@ -13,8 +13,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { adminApi, qk } from '@/lib/admin/api';
-import { formatPKR, STATUS_ORDER, statusLabel, timeAgo } from '@/lib/admin/format';
-import { useAdminUser } from './AdminSession';
+import { formatPKR, RENEWAL_DAYS, STATUS_ORDER, statusLabel, timeAgo } from '@/lib/admin/format';
+import { useAdminUser, useCan } from './AdminSession';
 import { EmptyState, ErrorState, PageHeader, Panel, Skeleton, StatusBadge } from './ui';
 
 function Kpi({
@@ -61,6 +61,11 @@ export function Dashboard() {
     queryFn: () => adminApi.listRequests({ page: 1, page_size: 5 }),
   });
 
+  // Link KPIs only to pages this role can open.
+  const engagementsHref = useCan('engagements.manage') ? '/admin/engagements' : undefined;
+  const talentsHref = useCan('talents.manage')
+    ? '/admin/talents?availability=AVAILABLE'
+    : undefined;
   const by = stats.data?.requests_by_status ?? {};
   const total = Object.values(by).reduce((n, v) => n + v, 0);
 
@@ -90,12 +95,19 @@ export function Dashboard() {
                 label="Active engagements"
                 value={stats.data.active_engagements}
                 icon={Briefcase}
+                href={engagementsHref && `${engagementsHref}?status=ACTIVE`}
               />
-              <Kpi label="Available talent" value={stats.data.available_talent} icon={Users} />
               <Kpi
-                label="Renewals due in 30 days"
+                label="Available talent"
+                value={stats.data.available_talent}
+                icon={Users}
+                href={talentsHref}
+              />
+              <Kpi
+                label={`Renewals due in ${RENEWAL_DAYS} days`}
                 value={stats.data.renewals_due_30d}
                 icon={BellRing}
+                href={engagementsHref && `${engagementsHref}?ending=${RENEWAL_DAYS}`}
                 tone={stats.data.renewals_due_30d > 0 ? 'alert' : undefined}
               />
               <Kpi

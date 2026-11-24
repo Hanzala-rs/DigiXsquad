@@ -4,6 +4,7 @@ import type { HireRequestDetail } from '@digixsquad/api-client';
 import { ApiError } from '@digixsquad/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { describedBy, Field, Input } from '@/components/forms/fields';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ export function endDateFor(start: string, months: number): string {
 export function MatchesPanel({ request }: { request: HireRequestDetail }) {
   const canConvert = useCan('engagements.convert');
   const canSeeCost = useCan('talents.cost');
+  const canManage = useCan('engagements.manage');
   const qc = useQueryClient();
   const converted = !!request.engagement_id;
   const matches = useQuery({
@@ -69,6 +71,14 @@ export function MatchesPanel({ request }: { request: HireRequestDetail }) {
             ` (${formatDate(convert.data.start_date)} – ${formatDate(convert.data.end_date)})`}
           .
         </p>
+        {canManage && (
+          <Link
+            href={`/admin/engagements/${convert.data?.id ?? request.engagement_id}`}
+            className="mt-3 inline-block text-sm text-primary hover:underline"
+          >
+            View engagement
+          </Link>
+        )}
       </Panel>
     );
   }

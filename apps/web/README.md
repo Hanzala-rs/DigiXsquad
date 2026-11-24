@@ -11,6 +11,7 @@ pnpm --filter @digixsquad/web dev        # http://localhost:3000, real API at NE
 pnpm --filter @digixsquad/web dev:mock   # browser requests answered by MSW from packages/contract/seed
 pnpm --filter @digixsquad/web test
 pnpm --filter @digixsquad/web e2e        # Playwright: hire → admin → status → track + axe a11y (starts its own mock server on :3100)
+E2E_BASE_URL=http://localhost:3000 pnpm --filter @digixsquad/web e2e   # reuse a running dev:mock server instead
 ```
 
 Lighthouse: measure a production build (`APP_ENV=production pnpm build && pnpm start`), not `dev`. Non-production builds are `noindex`, so SEO scores low there on purpose.
@@ -36,6 +37,14 @@ session once via `/auth/refresh` (concurrent 401s share one refresh) and retries
 
 With `dev:mock`, sign in with the demo accounts in `src/mocks/db.ts` (`DEMO_USERS` + `DEMO_PASSWORD`): one per role.
 A request submitted on `/hire` appears in `/admin/requests`. The mock session lives in `sessionStorage`.
+
+| Page | Who | What |
+| --- | --- | --- |
+| `/admin/requests` | all | Table + kanban, detail (status, notes, owner, matches, convert to engagement) |
+| `/admin/talents` | OPS, Super admin | Bench with search/role/availability filters; add, edit, deactivate (soft) |
+| `/admin/engagements` | OPS, Super admin | Renewal alerts (`?ending=30`), edit end date/fee/status, renew (same team, linked) |
+
+Lists share `DataTable` (sortable page, pagination) and `useUrlFilters` (filters in the URL).
 
 ## Home intro
 

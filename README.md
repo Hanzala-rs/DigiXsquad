@@ -3,8 +3,6 @@
 Squad-as-a-service platform: public website + hire request flow + admin panel.
 
 - Plan: [`docs/PLAN.md`](docs/PLAN.md)
-- Frontend agent rules: [`FRONTEND.md`](FRONTEND.md) · Codex rules: [`AGENTS.md`](AGENTS.md)
-- API contract: [`packages/contract/openapi.yaml`](packages/contract/openapi.yaml)
 
 ## Quick start (Phase 0)
 
@@ -16,10 +14,10 @@ pnpm contract:gen        # regenerate TS client + Zod
 pnpm test
 ```
 
-| Part                  | Tech                     | Owner       |
-| --------------------- | ------------------------ | ----------- |
-| `apps/web`            | Next.js                  | Frontend agent |
-| `apps/api`            | FastAPI (uv)             | Codex       |
-| `packages/contract`   | OpenAPI + seed JSON      | shared      |
-| `packages/api-client` | orval-generated TS + Zod | Frontend agent |
-| `infra`               | Docker, Caddy, CI        | Codex       |
+| Part                  | Tech                     | 
+| --------------------- | ------------------------ | 
+| `apps/web`            | Next.js                  | 
+| `apps/api`            | FastAPI (uv)             | 
+| `packages/contract`   | OpenAPI + seed JSON      | 
+| `packages/api-client` | orval-generated TS + Zod | 
+| `infra`               | Docker, Caddy, CI        | 

@@ -1,8 +1,31 @@
 import type { RequestStatus } from '@digixsquad/api-client';
-import { AlertTriangle, ChevronLeft, ChevronRight, Inbox } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight, Inbox } from 'lucide-react';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { statusLabel, statusTone } from '@/lib/admin/format';
 import { cn } from '@/lib/utils';
+
+export function BackLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+    >
+      <ArrowLeft className="size-4" aria-hidden="true" /> {children}
+    </Link>
+  );
+}
+
+/** One label/value row inside a `<dl>`; renders nothing for empty values. */
+export function Def({ k, v }: { k: string; v?: ReactNode }) {
+  if (v === undefined || v === null || v === '') return null;
+  return (
+    <>
+      <dt className="text-muted-foreground">{k}</dt>
+      <dd className="break-words">{v}</dd>
+    </>
+  );
+}
 
 export function PageHeader({
   title,
@@ -54,17 +77,33 @@ export function Panel({
   );
 }
 
-export function StatusBadge({ status, className }: { status: RequestStatus; className?: string }) {
+export function Badge({
+  tone,
+  className,
+  children,
+}: {
+  tone: string;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
     <span
       className={cn(
         'chamfer-sm inline-flex items-center px-2 py-0.5 font-heading text-[11px] font-semibold tracking-[0.08em] whitespace-nowrap uppercase',
-        statusTone[status],
+        tone,
         className,
       )}
     >
-      {statusLabel[status]}
+      {children}
     </span>
+  );
+}
+
+export function StatusBadge({ status, className }: { status: RequestStatus; className?: string }) {
+  return (
+    <Badge tone={statusTone[status]} className={className}>
+      {statusLabel[status]}
+    </Badge>
   );
 }
 
