@@ -4,6 +4,7 @@ import {
   Briefcase,
   ClipboardList,
   LayoutDashboard,
+  LayoutTemplate,
   LogOut,
   Menu,
   Users,
@@ -26,7 +27,7 @@ type NavItem = {
   exact?: boolean;
 };
 
-/** Next: catalog, site content, users, audit logs, messages. */
+/** Next: catalog, users, audit logs, messages. */
 export const adminNav: NavItem[] = [
   {
     href: '/admin',
@@ -42,6 +43,12 @@ export const adminNav: NavItem[] = [
     label: 'Engagements',
     icon: Briefcase,
     permission: 'engagements.manage',
+  },
+  {
+    href: '/admin/site-content',
+    label: 'Homepage',
+    icon: LayoutTemplate,
+    permission: 'content.manage',
   },
 ];
 

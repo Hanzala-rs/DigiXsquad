@@ -1,5 +1,12 @@
 // @vitest-environment node
-import { getSquad, listRoles, listSquads, getSiteContent, ApiError } from '@digixsquad/api-client';
+import {
+  adminUpdateSiteContent,
+  getSquad,
+  listRoles,
+  listSquads,
+  getSiteContent,
+  ApiError,
+} from '@digixsquad/api-client';
 import {
   GetSiteContentResponse,
   GetSquadResponse,
@@ -7,7 +14,10 @@ import {
   ListSquadsResponse,
 } from '@digixsquad/api-client/zod';
 import { stableUuid } from '@/lib/seed-data';
+import { db } from './db';
+import { siteContentStore } from './handlers';
 import { server } from './node';
+import { mockSession } from './session';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
@@ -34,6 +44,33 @@ describe('MSW handlers return contract-shaped data', () => {
   it('getSiteContent', async () => {
     const res = await getSiteContent();
     expect(GetSiteContentResponse.parse(res.data).about.values).toHaveLength(6);
+  });
+});
+
+describe('PUT /admin/site-content', () => {
+  const signIn = (role: 'SUPER_ADMIN' | 'SALES' | null) =>
+    mockSession.set(role ? db.listUsers().find((u) => u.role === role)!.id : null);
+  afterEach(() => {
+    signIn(null);
+    siteContentStore.reset();
+  });
+
+  it('needs a SUPER_ADMIN session', async () => {
+    const body = GetSiteContentResponse.parse((await getSiteContent()).data);
+    signIn(null);
+    await expect(adminUpdateSiteContent(body)).rejects.toMatchObject({ status: 401 });
+    signIn('SALES');
+    await expect(adminUpdateSiteContent(body)).rejects.toMatchObject({ status: 403 });
+  });
+
+  it('replaces the document, and GET returns it', async () => {
+    signIn('SUPER_ADMIN');
+    const body = GetSiteContentResponse.parse((await getSiteContent()).data);
+    const next = { ...body, projects: [{ label: 'Projects delivered', value: 42, suffix: '+' }] };
+    await adminUpdateSiteContent(next);
+    const after = GetSiteContentResponse.parse((await getSiteContent()).data);
+    expect(after.projects).toEqual(next.projects);
+    expect(after.about).toEqual(body.about);
   });
 });
 

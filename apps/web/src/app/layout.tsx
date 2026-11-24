@@ -42,6 +42,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Sets html[data-intro] before first paint; see components/home/intro-script.ts */}
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
         <OrganizationJsonLd company={company} />
+        {/* Scroll reveals start hidden in the server HTML; without JS, show them as-is. */}
+        <noscript>
+          <style>{'[data-reveal]{opacity:1!important;transform:none!important}'}</style>
+        </noscript>
       </head>
       <body className="min-h-svh">
         <a

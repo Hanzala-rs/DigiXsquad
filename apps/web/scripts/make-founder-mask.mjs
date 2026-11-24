@@ -43,13 +43,22 @@ const push = (x, y) => {
   bg[i] = 1;
   stack.push(i);
 };
-for (let x = 0; x < w; x++) push(x, 0), push(x, h - 1);
-for (let y = 0; y < h; y++) push(0, y), push(w - 1, y);
+for (let x = 0; x < w; x++) {
+  push(x, 0);
+  push(x, h - 1);
+}
+for (let y = 0; y < h; y++) {
+  push(0, y);
+  push(w - 1, y);
+}
 while (stack.length) {
   const i = stack.pop();
   const x = i % w;
   const y = (i - x) / w;
-  push(x + 1, y), push(x - 1, y), push(x, y + 1), push(x, y - 1);
+  push(x + 1, y);
+  push(x - 1, y);
+  push(x, y + 1);
+  push(x, y - 1);
 }
 
 // 3. Alpha mask, eroded 1px to drop the white fringe, then softened.

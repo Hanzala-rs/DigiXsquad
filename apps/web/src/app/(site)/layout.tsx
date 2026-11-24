@@ -5,12 +5,12 @@ import { getSiteContent } from '@/lib/site-content';
 
 /** Public site chrome: navbar, footer, floating WhatsApp button. */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const { company, hero } = await getSiteContent();
+  const { company, hero, sponsors } = await getSiteContent();
   return (
     <>
       <Navbar ctaLabel={hero.primary_cta} />
       <main id="main">{children}</main>
-      <Footer company={company} />
+      <Footer company={company} sponsors={sponsors} />
       <WhatsAppButton
         number={company.whatsapp}
         message={`Hi ${company.name}, I'd like to discuss hiring.`}

@@ -33,6 +33,7 @@ export const homeSections = {
     description: 'Pick a squad built for your kind of project, or hire individual roles.',
     viewSquad: 'View squad',
     allSquads: 'All squads',
+    units: { people: 'people', roles: 'Roles in this squad' },
   },
   vision: { eyebrow: 'Where we are going', visionTitle: 'Our vision', missionTitle: 'Our mission' },
   projects: {

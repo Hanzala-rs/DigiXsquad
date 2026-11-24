@@ -24,6 +24,7 @@ const adminPages = [
   '/admin/talents',
   '/admin/talents/new',
   '/admin/engagements',
+  '/admin/site-content',
 ];
 
 async function expectNoViolations(page: Page, path: string) {

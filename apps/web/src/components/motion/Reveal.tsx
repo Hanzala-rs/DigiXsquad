@@ -52,6 +52,7 @@ export function Reveal({
   const M = motion[as];
   return (
     <M
+      data-reveal=""
       className={className}
       initial={{ opacity: 0, ...offset(from, distance) }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
@@ -90,6 +91,7 @@ export function RevealGroup({
   const M = motion[as];
   return (
     <M
+      data-reveal=""
       className={className}
       variants={groupVariants(stagger, delay)}
       initial="hidden"
@@ -120,6 +122,7 @@ export function RevealItem({
   const M = motion[as];
   return (
     <M
+      data-reveal=""
       className={className}
       variants={{
         hidden: { opacity: 0, ...offset(from, distance) },

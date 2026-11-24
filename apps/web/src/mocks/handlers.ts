@@ -1,4 +1,5 @@
 import {
+  AdminUpdateSiteContentBody,
   CreateContactMessageBody,
   CreateHireRequestBody,
   PresignUploadBody,
@@ -6,9 +7,11 @@ import {
 } from '@digixsquad/api-client/zod';
 import { http, HttpResponse } from 'msw';
 import type { z } from 'zod';
+import { can } from '@/lib/admin/rbac';
 import { roles, siteContent, squads } from '@/lib/seed-data';
 import { adminHandlers } from './admin-handlers';
 import { db } from './db';
+import { mockSession } from './session';
 
 /**
  * MSW handlers: public endpoints answered from packages/contract/seed, plus the admin API
@@ -28,10 +31,39 @@ const validationError = (error: z.ZodError) =>
     { status: 422 },
   );
 
+/** Site content as edited through `PUT /admin/site-content` (in memory; reset() restores the seed). */
+let liveSiteContent = structuredClone(siteContent);
+export const siteContentStore = {
+  get: () => liveSiteContent,
+  reset() {
+    liveSiteContent = structuredClone(siteContent);
+  },
+};
+
 export const handlers = [
   http.get(`${API}/health`, () => HttpResponse.json({ status: 'ok' })),
 
-  http.get(`${API}/site-content`, () => HttpResponse.json(siteContent)),
+  http.get(`${API}/site-content`, () => HttpResponse.json(liveSiteContent)),
+
+  // SUPER_ADMIN only (rbac `content.manage`); replaces the whole document.
+  http.put(`${API}/admin/site-content`, async ({ request }) => {
+    const id = mockSession.get();
+    const user = id ? db.publicUser(id) : null;
+    if (!user || !user.is_active)
+      return HttpResponse.json(
+        { detail: 'Not authenticated', code: 'unauthorized' },
+        { status: 401 },
+      );
+    if (!can(user.role, 'content.manage'))
+      return HttpResponse.json(
+        { detail: 'Not allowed for your role', code: 'forbidden' },
+        { status: 403 },
+      );
+    const parsed = AdminUpdateSiteContentBody.safeParse(await request.json());
+    if (!parsed.success) return validationError(parsed.error);
+    liveSiteContent = parsed.data;
+    return HttpResponse.json(liveSiteContent);
+  }),
 
   http.get(`${API}/squads`, () =>
     HttpResponse.json([...squads].sort((a, b) => a.sort_order - b.sort_order)),
