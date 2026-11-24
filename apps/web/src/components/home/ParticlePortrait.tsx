@@ -18,6 +18,8 @@ import {
 const COUNT_DESKTOP = 7800;
 const COUNT_MOBILE = 3600;
 const MOBILE_MAX = 819;
+/** How long the real photo is shown before it turns into particles. */
+const PHOTO_HOLD_MS = 1500;
 /** Pointer hole radius at a ~740px-tall figure; scaled with the figure. */
 const HOLE_RADIUS = 90;
 /** The figure box inside .ds-center: same as .ds-portrait (top 10%, full width, 90% height). */
@@ -130,6 +132,11 @@ export function ParticlePortrait({ src }: { src: string }) {
     const frame = (now: number) => {
       raf = 0;
       if (disposed || !field || !inView || document.hidden) return;
+      // The real photo stays on screen until the hold is over; only then do the dots take over.
+      if (now < introAt) {
+        schedule();
+        return;
+      }
       const dt = last ? (now - last) / 1000 : 1 / 60;
       last = now;
 
@@ -164,8 +171,12 @@ export function ParticlePortrait({ src }: { src: string }) {
 
     const start = () => {
       if (introAt >= 0 || !field || !introReady()) return;
-      // On reveal, wait a beat so the dots rise with the halo/frame (portrait rise has 0.2s delay).
-      introAt = performance.now() + (root.getAttribute('data-intro') === 'reveal' ? 200 : 0);
+      // Show the real photo first (client request), then let the dots take over. On reveal, add
+      // the portrait rise delay so the hold starts once the photo is actually visible.
+      introAt =
+        performance.now() +
+        PHOTO_HOLD_MS +
+        (root.getAttribute('data-intro') === 'reveal' ? 200 : 0);
       last = 0;
       schedule();
     };
